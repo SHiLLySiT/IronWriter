@@ -11,8 +11,9 @@
     width: device-width;
 }
 
-html * {
+* {
     font-family: 'Roboto Slab', 'Roboto', 'Lato', sans-serif;
+    
     --mdc-theme-primary: #F44336;
     --mdc-theme-primary-light:#FFCDD2;
     --mdc-theme-primary-dark: #D32F2F;
@@ -20,6 +21,10 @@ html * {
     --mdc-theme-background: #FFFFFF;
     --mdc-theme-text-primary-on-background: #212121;
     --mdc-theme-text-secondary-on-background: #757575;
+
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 html, body {
@@ -34,24 +39,106 @@ body {
 
 #container {
     padding: 8px;
-    height: 90%;
+    height: 100%;
 }
 
 /* Character sheet style */
 #character-pane {
-    width: 40%;
+    width: 39%;
     height: 100%;
     float: left;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+#character-pane .mdc-card {
+    padding: 0px 16px 16px 16px;
+    margin: 0px 8px 16px 0px;
+}
+
+#character-pane .mdc-card > h3 {
+    text-align: center;
+    margin-bottom: 0;
+}
+
+#character-name {
+    /* font-weight: bold; */
+    margin-top: 8px;
+    text-align: center;
+    font-size: 1.2em;
+}
+
+#stats {
+    text-align: center;
+    margin: auto;
+}
+
+/* stat box */
+.stat-box {
+    margin: 4px;
+    width: 48px;
+    height: 48px;
+    float: left;
+    border-color: black;
+    border-width: 1px;
+    border-style: solid;
+}
+.stat-box .stat-value {
+    font-weight: bold;
+    text-align: center;
+    font-size: 1.5em
+}
+.stat-box .stat-name {
+    text-align: center;
+    font-size: 0.75em
+}
+
+/* Progress tracks */
+.progress-track {
+    text-align: center;
+}
+.progress-track p {
+    margin-bottom: -5px;
+}
+.progress-track .challenge {
+    font-size: 0.75em;
+    margin: 8px;
+}
+.progress-track .progress-wrapper {
+    width: 300px;
+}
+.progress-box {
+    width: 20px;
+    height: 20px;
+    margin: 2px;
+    display: inline-block;
+    border-color: black;
+    border-width: 1px;
+    border-style: solid;
+}
+.progress-box .tick-row {
+    margin: 1px;
+    width: 16px;
+    height: 6px;
+}
+.progress-box .tick {
+    margin: 1px;
+    width: 6px;
+    height: 6px;
+    float: left;
+    background-color: black;
 }
 
 /* Event Log Style */
 #event-pane {
-    width: 60%;
+    width: 59%;
     height: 100%;
     float: right;
+    padding-bottom: 30px;
+    position: relative;
 }
 
-#event-pane #log-history {
+#log-history {
     height: 75%;
     overflow-y: scroll;
     overflow-x: hidden;
@@ -59,15 +146,18 @@ body {
 
 #event-pane .log-entry .mdc-card {
     padding: 16px;
-    margin: 16px 8px 16px 0px;
+    margin: 0px 8px 16px 0px;
 }
 
-#event-pane #entry {
-    height: 25%;
+#entry {
+    position: absolute;
+    bottom: 0;
+    height: 130px;
     width: 100%;
     margin: 16px 0px;
+    background-color: rgb(245, 245, 245);
 }
 
-#event-pane #entry button {
+#entry button {
     margin: 16px 0px;
 }

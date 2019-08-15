@@ -9,60 +9,91 @@
     <script src="ironwriter.js"></script>
 </head>
 
-<body class="mdc-typography">
+<body>
     <div id="container">
         <!-- Character Sheet Panel -->
         <div id="character-pane">
-            <div>
-                <div>Name:</div>
-                <div>John Doe</div>
+            <div class="mdc-card">
+                <h3>Status</h3>
+
+                <div id="character-name">John Doe</div>
+
+                <div id="stats">
+                    <div class="stat-box">
+                        <div class="stat-value">0</div>
+                        <div class="stat-name">Edge</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">0</div>
+                        <div class="stat-name">Heart</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">0</div>
+                        <div class="stat-name">Iron</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">0</div>
+                        <div class="stat-name">Shadow</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">0</div>
+                        <div class="stat-name">Wits</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div>Experience:</div>
+                    <div>
+                        <i class="fas fa-circle"></i>
+                        <i class="far fa-times-circle"></i>
+                        <i class="far fa-circle"></i>
+                    </div>
+                </div>
+
+                <div>
+                    <div>
+                        <div>2</div>
+                        <div>Momentum</div>
+                    </div>
+                    <div>
+                        <div>10</div>
+                        <div>Max</div>
+                    </div>
+                    <div>
+                        <div>-2</div>
+                        <div>Reset</div>
+                    </div>
+                </div>
             </div>
 
-            <div>
-                <div>Experience:</div>
-                <div>
-                    <i class="fas fa-circle"></i>
-                    <i class="far fa-dot-circle"></i>
-                    <i class="far fa-circle"></i>
+            <div class="mdc-card">
+                <h3>Vows</h3>
+                <div class="progress-track">
+                    <div>
+                        <p>Avenge my father's death </p>
+                        <p class="challenge">Dangerous</p>
+                    </div>
+                    <div class="progress-wrapper">
+                        <div class="progress-box">
+                            <div class="tick-row">
+                                <div class="tick"></div>
+                                <div class="tick"></div>
+                            </div>
+                            <div class="tick-row">
+                                <div class="tick"></div>
+                                <div class="tick"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div>
-                <div>
-                    <div>0</div>
-                    <div>Edge</div>
-                </div>
-                <div>
-                    <div>0</div>
-                    <div>Heart</div>
-                </div>
-                <div>
-                    <div>0</div>
-                    <div>Iron</div>
-                </div>
-                <div>
-                    <div>0</div>
-                    <div>Shadow</div>
-                </div>
-                <div>
-                    <div>0</div>
-                    <div>Wits</div>
-                </div>
+            <div class="mdc-card">
+                <h3>Progress</h3>
             </div>
 
-            <div>
-                <div>
-                    <div>2</div>
-                    <div>Momentum</div>
-                </div>
-                <div>
-                    <div>10</div>
-                    <div>Max</div>
-                </div>
-                <div>
-                    <div>-2</div>
-                    <div>Reset</div>
-                </div>
+            <div class="mdc-card">
+                <h3>Equipment</h3>
             </div>
         </div>
 
@@ -90,6 +121,8 @@
                 </button>
             </div>
 
+            <div class="push">
+            </div>
         </div>
     </div>
 
