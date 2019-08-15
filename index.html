@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <script src="ironwriter.js"></script>
+</head>
+
+<body class="mdc-typography">
+    <div id="container">
+        <!-- Character Sheet Panel -->
+        <div id="character-pane">
+            <div>
+                <div>Name:</div>
+                <div>John Doe</div>
+            </div>
+
+            <div>
+                <div>Experience:</div>
+                <div>
+                    <i class="fas fa-circle"></i>
+                    <i class="far fa-dot-circle"></i>
+                    <i class="far fa-circle"></i>
+                </div>
+            </div>
+
+            <div>
+                <div>
+                    <div>0</div>
+                    <div>Edge</div>
+                </div>
+                <div>
+                    <div>0</div>
+                    <div>Heart</div>
+                </div>
+                <div>
+                    <div>0</div>
+                    <div>Iron</div>
+                </div>
+                <div>
+                    <div>0</div>
+                    <div>Shadow</div>
+                </div>
+                <div>
+                    <div>0</div>
+                    <div>Wits</div>
+                </div>
+            </div>
+
+            <div>
+                <div>
+                    <div>2</div>
+                    <div>Momentum</div>
+                </div>
+                <div>
+                    <div>10</div>
+                    <div>Max</div>
+                </div>
+                <div>
+                    <div>-2</div>
+                    <div>Reset</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Event Log -->
+        <div id="event-pane">
+            <div id="log-history">
+                <div id="log-template" class="log-entry">
+                    <div class="mdc-card">
+                        <div id="content">Your quest begins.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="entry">
+                <div
+                    class="mdc-text-field text-field mdc-text-field--fullwidth mdc-text-field--no-label mdc-text-field--textarea">
+                    <textarea id="log-content" class="mdc-text-field__input"></textarea>
+                    <div class="mdc-notched-outline mdc-notched-outline--upgraded">
+                        <div class="mdc-notched-outline__leading"></div>
+                        <div class="mdc-notched-outline__trailing"></div>
+                    </div>
+                </div>
+                <button id="submit-log" class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
+                    <span class="mdc-button__label">Submit</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <script>window.mdc.autoInit();</script>
+</body>
+
+</html>

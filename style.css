@@ -1,0 +1,73 @@
+@-ms-viewport
+{
+    width: device-width;
+}
+@-o-viewport
+{
+    width: device-width;
+}
+@viewport
+{
+    width: device-width;
+}
+
+html * {
+    font-family: 'Roboto Slab', 'Roboto', 'Lato', sans-serif;
+    --mdc-theme-primary: #F44336;
+    --mdc-theme-primary-light:#FFCDD2;
+    --mdc-theme-primary-dark: #D32F2F;
+    --mdc-theme-secondary: #FF5252;
+    --mdc-theme-background: #FFFFFF;
+    --mdc-theme-text-primary-on-background: #212121;
+    --mdc-theme-text-secondary-on-background: #757575;
+}
+
+html, body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+}
+
+body {
+    background-color: rgb(245, 245, 245);
+}
+
+#container {
+    padding: 8px;
+    height: 90%;
+}
+
+/* Character sheet style */
+#character-pane {
+    width: 40%;
+    height: 100%;
+    float: left;
+}
+
+/* Event Log Style */
+#event-pane {
+    width: 60%;
+    height: 100%;
+    float: right;
+}
+
+#event-pane #log-history {
+    height: 75%;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+#event-pane .log-entry .mdc-card {
+    padding: 16px;
+    margin: 16px 8px 16px 0px;
+}
+
+#event-pane #entry {
+    height: 25%;
+    width: 100%;
+    margin: 16px 0px;
+}
+
+#event-pane #entry button {
+    margin: 16px 0px;
+}
