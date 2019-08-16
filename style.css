@@ -104,10 +104,10 @@ body {
     font-size: 0.75em;
     margin: 8px;
 }
-.progress-track .progress-wrapper {
-    width: 300px;
+.progress-track .wrapper {
+    margin: auto;
 }
-.progress-box {
+.progress-track .box {
     width: 20px;
     height: 20px;
     margin: 2px;
@@ -116,12 +116,12 @@ body {
     border-width: 1px;
     border-style: solid;
 }
-.progress-box .tick-row {
+.progress-track .tick-row {
     margin: 1px;
     width: 16px;
     height: 6px;
 }
-.progress-box .tick {
+.progress-track .tick {
     margin: 1px;
     width: 6px;
     height: 6px;

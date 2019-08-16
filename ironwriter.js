@@ -26,8 +26,8 @@ function handleInit() {
 }
 
 function initProgressTrack(track) {
-    let template = track.querySelector(".progress-box");
-    let container = track.querySelector(".progress-wrapper");
+    let template = track.querySelector(".box");
+    let container = track.querySelector(".wrapper");
     for (let i = 0; i < 10; i++) {
         let newBox = template.cloneNode(true);
         container.appendChild(newBox);
