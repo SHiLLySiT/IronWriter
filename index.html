@@ -14,54 +14,80 @@
         <!-- Character Sheet Panel -->
         <div id="character-pane">
             <div class="mdc-card">
-                <h3>Status</h3>
+                <h3>Character</h3>
 
-                <div id="character-name">John Doe</div>
+                <div id="character-name" class="status-group">John Doe</div>
 
-                <div id="stats">
-                    <div class="stat-box">
-                        <div class="stat-value">0</div>
-                        <div class="stat-name">Edge</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value">0</div>
-                        <div class="stat-name">Heart</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value">0</div>
-                        <div class="stat-name">Iron</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value">0</div>
-                        <div class="stat-name">Shadow</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value">0</div>
-                        <div class="stat-name">Wits</div>
+                <div id="experience" class="experience-container status-group">
+                    <div>Experience</div>
+                    <div class="wrapper">
+                        <div class="dot">
+                            <i class="fas fa-circle" style="display: none;"></i>
+                            <i class="far fa-times-circle" style="display: none;"></i>
+                            <i class="far fa-circle"></i>
+                        </div>
                     </div>
                 </div>
 
-                <div>
-                    <div>Experience:</div>
-                    <div>
-                        <i class="fas fa-circle"></i>
-                        <i class="far fa-times-circle"></i>
-                        <i class="far fa-circle"></i>
+                <div class="stat-container status-group">
+                    <div>Stats</div>
+                    <div class="wrapper">
+                        <div class="stat-box">
+                            <div class="stat-value">0</div>
+                            <div class="stat-name">Edge</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">0</div>
+                            <div class="stat-name">Heart</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">0</div>
+                            <div class="stat-name">Iron</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">0</div>
+                            <div class="stat-name">Shadow</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">0</div>
+                            <div class="stat-name">Wits</div>
+                        </div>
                     </div>
                 </div>
 
-                <div>
-                    <div>
-                        <div>2</div>
-                        <div>Momentum</div>
+                <div class="stat-container status-group">
+                    <div>Status</div>
+                    <div class="wrapper">
+                        <div class="stat-box">
+                            <div class="stat-value">0</div>
+                            <div class="stat-name">Health</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">0</div>
+                            <div class="stat-name">Supply</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">0</div>
+                            <div class="stat-name">Spirit</div>
+                        </div>
                     </div>
-                    <div>
-                        <div>10</div>
-                        <div>Max</div>
-                    </div>
-                    <div>
-                        <div>-2</div>
-                        <div>Reset</div>
+                </div>
+
+                <div class="stat-container status-group">
+                    <div>Momentum</div>
+                    <div class="wrapper">
+                        <div class="stat-box">
+                            <div class="stat-value">0</div>
+                            <div class="stat-name">Current</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">0</div>
+                            <div class="stat-name">Max</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">0</div>
+                            <div class="stat-name">Reset</div>
+                        </div>
                     </div>
                 </div>
             </div>

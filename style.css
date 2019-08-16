@@ -61,24 +61,28 @@ body {
     margin-bottom: 0;
 }
 
+.status-group {
+    margin: 8px 0px;
+}
+
 #character-name {
-    /* font-weight: bold; */
     margin-top: 8px;
     text-align: center;
     font-size: 1.2em;
 }
 
-#stats {
+/* stat box */
+.stat-container {
     text-align: center;
+}
+.stat-container .wrapper {
     margin: auto;
 }
-
-/* stat box */
 .stat-box {
     margin: 4px;
     width: 48px;
     height: 48px;
-    float: left;
+    display: inline-block;
     border-color: black;
     border-width: 1px;
     border-style: solid;
@@ -91,6 +95,19 @@ body {
 .stat-box .stat-name {
     text-align: center;
     font-size: 0.75em
+}
+
+/* experience */
+.experience-container {
+    text-align: center;   
+}
+.experience-container .wrapper {
+    margin: auto;
+    margin-top: 4px;
+    width: 250px;
+}
+.experience-container .dot {
+    display: inline-block;
 }
 
 /* Progress tracks */

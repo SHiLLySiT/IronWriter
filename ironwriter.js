@@ -1,13 +1,5 @@
 "use strict";
 
-let stats = {
-    edge: 0,
-    heart: 0,
-    iron: 0,
-    shadow: 0,
-    wits: 0,
-};
-
 let isControlPressed = false;
 
 window.addEventListener("load", handleInit);
@@ -19,18 +11,33 @@ function handleInit() {
     let submitButton = document.getElementById("submit-log");
     submitButton.addEventListener("click", handleSubmitLog);
 
-    let progressTracks = container.querySelectorAll(".progress-track");
+    let progressTracks = document.querySelectorAll(".progress-track");
     for (let i = 0; i < progressTracks.length; i++) {
         initProgressTrack(progressTracks[i]);
+    }
+
+    
+    initExperience();
+}
+
+function initExperience() {
+    const MAX_EXPERIENCE = 30;
+    let experience = document.getElementById("experience");
+    let template = experience.querySelector(".dot");
+    let container = experience.querySelector(".wrapper");
+    for (let i = 0; i < MAX_EXPERIENCE - 1; i++) {
+        let dot = template.cloneNode(true);
+        container.insertBefore(dot, container.lastChild);
     }
 }
 
 function initProgressTrack(track) {
+    const MAX_PROGRESS = 10;
     let template = track.querySelector(".box");
     let container = track.querySelector(".wrapper");
-    for (let i = 0; i < 10; i++) {
-        let newBox = template.cloneNode(true);
-        container.appendChild(newBox);
+    for (let i = 0; i < MAX_PROGRESS - 1; i++) {
+        let box = template.cloneNode(true);
+        container.insertBefore(box, container.lastChild);
     }
 }
 
