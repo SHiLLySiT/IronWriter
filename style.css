@@ -111,6 +111,10 @@ body {
 .debility-container .mdc-chip {
     cursor: default;
 }
+.debility-container .debility.mdc-chip:hover { 
+    background-color: #D32F2F;
+    color: white;
+}
 
 /* experience */
 .experience-container {
