@@ -97,6 +97,21 @@ body {
     font-size: 0.75em
 }
 
+/* debilities */
+.debility-container {
+    text-align: center;
+}
+.debility-container .debility {
+    background-color: #D32F2F;
+    color: white;
+}
+.debility-container .mdc-chip-set {
+    display: inline-block;
+}
+.debility-container .mdc-chip {
+    cursor: default;
+}
+
 /* experience */
 .experience-container {
     text-align: center;   
