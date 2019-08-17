@@ -39,16 +39,16 @@ body {
 
 #container {
     padding: 8px;
+    width: 100%;
     height: 100%;
 }
 
 /* Character sheet style */
 #character-pane {
-    width: 39%;
+    width: 400px;
     height: 100%;
     float: left;
     overflow-y: scroll;
-    overflow-x: hidden;
 }
 
 #character-pane .mdc-card {
@@ -167,17 +167,15 @@ body {
 
 /* Event Log Style */
 #event-pane {
-    width: 59%;
+    width: 100%;
     height: 100%;
-    float: right;
     padding-bottom: 30px;
-    position: relative;
 }
 
 #log-history {
     height: 75%;
     overflow-y: scroll;
-    overflow-x: hidden;
+    padding-left: 8px;
 }
 
 #event-pane .log-entry .mdc-card {
@@ -186,12 +184,9 @@ body {
 }
 
 #entry {
-    position: absolute;
-    bottom: 0;
-    height: 130px;
-    width: 100%;
-    margin: 16px 0px;
-    background-color: rgb(245, 245, 245);
+    margin-top: 16px;
+    overflow-x: hidden;
+    padding-left: 8px;
 }
 
 #entry button {
