@@ -166,6 +166,13 @@ function applyState(deltaState) {
     // TODO: other props
 }
 
+function unapplyState(deltaState) {
+    for (let p in currentState.stats) {
+        currentState.stats[p] -= deltaState.stats[p];
+    }
+    // TODO: other props
+}
+
 function refresh() {
     for (let p in statElements) {
         statElements[p].textContent = currentState.stats[p];
