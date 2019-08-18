@@ -73,6 +73,12 @@ function handleInit() {
     let submitButton = document.getElementById("submit-log");
     submitButton.addEventListener("click", handleSubmitLog);
 
+    let cancelButton = document.getElementById("cancel-log");
+    cancelButton.style.display = "none";
+
+    let saveButton = document.getElementById("save-log");
+    saveButton.style.display = "none";
+
     let progressTrackTemplate = document.getElementById("progress-track-template");
     progressTrackTemplate.style.display = "none";
     initProgressTrack(progressTrackTemplate);
@@ -151,7 +157,7 @@ function handleSubmitLog() {
 function addLog(input) {
     let logTemplate = document.getElementById("log-template");
     let newLog = logTemplate.cloneNode(true);
-    newLog.querySelector("#content").innerText = input
+    newLog.querySelector(".content").innerText = input
 
     let historyElement = document.getElementById("log-history");
     historyElement.appendChild(newLog);

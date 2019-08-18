@@ -156,13 +156,18 @@
         <!-- Event Log -->
         <div id="event-pane">
             <div id="log-history">
-                <div id="log-template" class="log-entry">
-                    <div class="mdc-card">
-                        <div class="actions">
-                            <i class="fas fa-trash"></i>
+                <div id="log-template" class="log-entry mdc-card mdc-card--outlined">
+                    <div class="content">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean condimentum tellus ornare orci posuere ornare. Aenean in est at metus auctor ornare.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean condimentum tellus ornare orci posuere ornare. Aenean in est at metus auctor ornare.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean condimentum tellus ornare orci posuere ornare. Aenean in est at metus auctor ornare.</div>
+                    <div class="actions">
+                        <button class="mdc-button">
                             <i class="fas fa-pencil-alt"></i>
-                        </div>
-                        <div class="content">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean condimentum tellus ornare orci posuere ornare. Aenean in est at metus auctor ornare.</div>
+                        </button>
+                        <button class="mdc-button">
+                            <i class="fas fa-dice-d20"></i>
+                        </button>
+                        <button class="mdc-button">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -178,6 +183,12 @@
                 <div class="buttons">
                     <button id="submit-log" class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
                         <span class="mdc-button__label">Submit</span>
+                    </button>
+                    <button id="cancel-log" class="mdc-button" data-mdc-auto-init="MDCRipple">
+                        <span class="mdc-button__label">Cancel</span>
+                    </button>
+                    <button id="save-log" class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
+                        <span class="mdc-button__label">Save</span>
                     </button>
                 </div>
             </div>
