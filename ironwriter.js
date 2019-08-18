@@ -8,6 +8,13 @@ class ProgressState {
     }
 }
 
+class ListState {
+    constructor(action, value) {
+        this.action = action;
+        this.value = value;
+    }
+}
+
 class GameState {
     constructor() {
         this.content = "";
@@ -26,12 +33,23 @@ class GameState {
             momentumReset: 0,
             experience: 0,
             experienceSpent: 0,
+            bonds: 0,
         }
         
-        this.vows = [];
-        this.progress = [];
-        this.debilities = [];
-        this.bonds = new ProgressState();
+        this.debilities = {
+            wounded: false,
+            shaken: false,
+            unprepared: false,
+            encumbered: false,
+            maimed: false,
+            corrupted: false,
+            cursed: false,
+            tormented: false,
+        };
+
+        this.vows = {};
+        this.progress = {};
+        this.bonds = {};
     }
 }
 
@@ -64,6 +82,7 @@ let debilityElements = {
 }
 
 const MAX_EXPERIENCE = 30;
+const MAX_PROGRESS = 10;
 
 let experience = undefined;
 let submitButton = undefined;
@@ -72,7 +91,11 @@ let saveButton = undefined;
 let logTemplate = undefined;
 let logInput = undefined;
 let logHistory = undefined;
+let progressTrackTemplate = undefined;
+let bondCard = undefined;
+let bondTemplate = undefined;
 
+let bondProgressTrack = undefined;
 let deltaStates = [];
 let currentState = new GameState();
 let currentDeltaIndex = 0;
@@ -102,13 +125,11 @@ function handleInit() {
     saveButton.addEventListener("click", handleSaveLog);
     saveButton.style.display = "none";
 
-    let progressTrackTemplate = document.getElementById("progress-track-template");
-    progressTrackTemplate.style.display = "none";
-    initProgressTrack(progressTrackTemplate);
-
+    initProgressTrack();
     initExperience();
     initDebilities();
     initStats();
+    initBonds();
 
     deltaStates.push(new GameState());
     refresh();
@@ -138,13 +159,48 @@ function initExperience() {
     }
 }
 
-function initProgressTrack(track) {
-    const MAX_PROGRESS = 10;
-    let template = track.querySelector(".box");
-    let container = track.querySelector(".wrapper");
+function initProgressTrack() {
+    progressTrackTemplate = document.getElementById("progress-track-template");
+    progressTrackTemplate.remove();
+
+    let boxTemplate = progressTrackTemplate.querySelector(".box");
+    let ticks = boxTemplate.querySelectorAll(".tick");
+    for (let j = 0; j < ticks.length; j++) {
+        ticks[j].style.display = "none";
+    }
+
+    let container = progressTrackTemplate.querySelector(".wrapper");
     for (let i = 0; i < MAX_PROGRESS - 1; i++) {
-        let box = template.cloneNode(true);
+        let box = boxTemplate.cloneNode(true);
         container.insertBefore(box, container.lastChild);
+    }   
+}
+
+function initBonds() {
+    bondCard = document.getElementById("bond-card")
+    let bondContainer = bondCard.querySelector(".track-container");
+    bondProgressTrack = createProgressTrack(null, null);
+    bondContainer.append(bondProgressTrack);
+
+    bondTemplate = document.getElementById("bond-template");
+    bondTemplate.remove();
+}
+
+function createProgressTrack(name, challenge) {
+    let newTrack = progressTrackTemplate.cloneNode(true);
+    newTrack.querySelector(".name").textContent = name;
+    newTrack.querySelector(".challenge").textContent = challenge;
+    return newTrack;
+}
+
+function updateProgressTrack(track, value) {
+    let ticks = track.querySelectorAll(".tick");
+    for (let i = 0; i < MAX_PROGRESS * 4; i++) {
+        if (i < value) {
+            ticks[i].style.display = "block";
+        } else {
+            ticks[i].style.display = "none";
+        }
     }
 }
 
@@ -274,16 +330,42 @@ function gotoState(index) {
 }
 
 function applyState(deltaState) {
+    // stats
     for (let p in currentState.stats) {
         currentState.stats[p] += deltaState.stats[p];
     }
+
+    // bonds
+    for (let p in deltaState.bonds) {
+        let action = deltaState.bonds[p].action;
+        let value = deltaState.bonds[p].value;
+        if (action == "add") {
+            currentState.bonds[p] = value;
+        } else if (action == "remove") {
+            delete currentState.bonds[p];
+        }
+    }
+
     // TODO: other props
 }
 
 function unapplyState(deltaState) {
+    // stats
     for (let p in currentState.stats) {
         currentState.stats[p] -= deltaState.stats[p];
     }
+
+    // bonds
+    for (let p in deltaState.bonds) {
+        let action = deltaState.bonds[p].action;
+        let value = deltaState.bonds[p].value;
+        if (action == "add") {
+            delete currentState.bonds[p];
+        } else if (action == "remove") {
+            currentState.bonds[p] = value;
+        }
+    }
+
     // TODO: other props
 }
 
@@ -314,6 +396,20 @@ function refresh() {
             empty.style.display = "block";
         }
     }
+
+    // bonds
+    updateProgressTrack(bondProgressTrack, currentState.stats.bonds);
+
+    var list = bondCard.querySelector(".bond-list");
+    let items = list.querySelectorAll("li");
+    for (let i = 0; i < items.length; i++) {
+        items[i].remove();
+    }
+    for (let p in currentState.bonds) {
+        let bond = bondTemplate.cloneNode(true);
+        bond.querySelector(".content").textContent = currentState.bonds[p];
+        list.appendChild(bond);
+    }
 }
 
 function buildState(state, input) {
@@ -324,12 +420,38 @@ function buildState(state, input) {
             let args = result[i]
                 .replace("[", "")
                 .replace("]", "")
-                .split(/\s(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                .split(/\s(?=(?:(?:[^"]*"){2})*(?:[^"])*$)/);
+                
+            for (let j = 0; j < args.length; j++) {
+                args[j] = args[j].replace(/^"(.+(?="$))"$/, '$1');
+            };
 
-            if (state.stats[args[0]] !== undefined) {
+            if (args[0] == "bond") {
+                addBond(state, args);
+            } else if (args[0] == "unbond") {
+                removeBond(state, args);
+            } else if (state.stats[args[0]] !== undefined) {
                 changeStat(state, args);
+            } else {
+                // invalid command
             }
         }
+    }
+}
+
+function removeBond(state, args) {
+    let name = args[1].toLowerCase();
+    if (currentState.bonds[name] !== undefined) {
+        state.bonds[name] = new ListState("remove", args[1]);
+        state.stats.bonds--;
+    }
+}
+
+function addBond(state, args) {
+    let name = args[1].toLowerCase();
+    if (currentState.bonds[name] === undefined) {
+        state.bonds[name] = new ListState("add", args[1]);
+        state.stats.bonds++;
     }
 }
 
