@@ -311,7 +311,7 @@ function buildState(state, input) {
 
 function changeStat(state, args) {
     if (args[1][0] == "+" || args[1][0] == "-") {
-        state.stats[args[0]] = Number(args[1]);
+        state.stats[args[0]] += Number(args[1]);
     } else {
         state.stats[args[0]] = Number(args[1]) - currentState.stats[args[0]];
     }
