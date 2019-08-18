@@ -10,6 +10,8 @@ class ProgressState {
 
 class GameState {
     constructor() {
+        this.content = "";
+
         this.stats = {
             edge: 0,
             heart: 0,
@@ -61,8 +63,17 @@ let debilityElements = {
     tormented: undefined,
 }
 
+let submitButton = undefined;
+let cancelButton = undefined;
+let saveButton = undefined;
+let logTemplate = undefined;
+let logInput = undefined;
+let logHistory = undefined;
+
 let deltaStates = [];
 let currentState = new GameState();
+let currentDeltaIndex = 0;
+let editLog = null;
 
 window.addEventListener("load", handleInit);
 
@@ -70,13 +81,22 @@ function handleInit() {
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
 
-    let submitButton = document.getElementById("submit-log");
+    logInput = document.getElementById("log-input");
+
+    logHistory = document.getElementById("log-history");
+
+    logTemplate = document.getElementById("log-template");
+    logTemplate.remove();
+
+    submitButton = document.getElementById("submit-log");
     submitButton.addEventListener("click", handleSubmitLog);
 
-    let cancelButton = document.getElementById("cancel-log");
+    cancelButton = document.getElementById("cancel-log");
+    cancelButton.addEventListener("click", handleCancelLog);
     cancelButton.style.display = "none";
 
-    let saveButton = document.getElementById("save-log");
+    saveButton = document.getElementById("save-log");
+    saveButton.addEventListener("click", handleSaveLog);
     saveButton.style.display = "none";
 
     let progressTrackTemplate = document.getElementById("progress-track-template");
@@ -130,7 +150,11 @@ function handleKeyDown(event) {
     if (event.key == "Control") {
         isControlPressed = true;
     } else if (isControlPressed && event.key == "Enter") {
-        handleSubmitLog();
+        if (editLog == null) {
+            handleSubmitLog();
+        } else {
+            handleSaveLog();
+        }
     }
 }
 
@@ -141,28 +165,110 @@ function handleKeyUp(event) {
 }
 
 function handleSubmitLog() {
-    let logElement = document.getElementById("log-content");
-    let input = logElement.value;
-
+    let input = logInput.value;
     addLog(input);
 
-    let deltaState = buildState(input);
+    let deltaState = new GameState();
+    buildState(deltaState, input);
     deltaStates.push(deltaState);
+    currentDeltaIndex = deltaStates.length - 1;
     applyState(deltaState);
 
-    logElement.value = null;
+    logInput.value = null;
     refresh();
 }
 
 function addLog(input) {
-    let logTemplate = document.getElementById("log-template");
     let newLog = logTemplate.cloneNode(true);
+    newLog.id = undefined;
+    newLog.dataset.index = deltaStates.length;
     newLog.querySelector(".content").innerText = input
+    newLog.querySelector(".edit").addEventListener("click", () => handleEditLog(newLog));
+    newLog.querySelector(".reroll").addEventListener("click", () => handleRerollLog(newLog));
+    newLog.querySelector(".delete").addEventListener("click", () => handleDeleteLog(newLog));
 
-    let historyElement = document.getElementById("log-history");
-    historyElement.appendChild(newLog);
+    logHistory.appendChild(newLog);
 
     newLog.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+}
+
+function handleEditLog(log) {
+    submitButton.style.display = "none";
+    saveButton.style.display = "inline";
+    cancelButton.style.display = "inline";
+
+    if (editLog != null) {
+        editLog.style.backgroundColor = "#FFFFFF";
+    }
+    editLog = log;
+    log.style.backgroundColor = "var(--mdc-theme-primary-light, #ff0000)";
+    logInput.value = log.querySelector(".content").innerText;
+}
+
+function handleCancelLog() {
+    submitButton.style.display = "block";
+    saveButton.style.display = "none";
+    cancelButton.style.display = "none";
+    editLog.style.backgroundColor = "#FFFFFF";
+    
+    editLog = null;
+    logInput.value = null;
+}
+
+function handleSaveLog() {
+    submitButton.style.display = "block";
+    saveButton.style.display = "none";
+    cancelButton.style.display = "none";
+    editLog.style.backgroundColor = "#FFFFFF";
+
+    editLog.querySelector(".content").innerText = logInput.value;
+
+    gotoState(editLog.dataset.index - 1);
+    var state = deltaStates[editLog.dataset.index];
+    buildState(state, logInput.value);
+    gotoState(deltaStates.length - 1);
+
+    refresh();
+
+    editLog = null;
+    logInput.value = null;
+}
+
+function handleRerollLog(log) {
+    // TODO: reroll any dice rolls in log
+}
+
+function handleDeleteLog(log) {
+    gotoState(log.dataset.index - 1);
+    deltaStates.splice(log.dataset.index, 1);
+    gotoState(deltaStates.length - 1);
+
+    log.remove();
+    let logs = logHistory.querySelectorAll("div");
+    for (let i = log.dataset.index - 1; i < logs.length - 1; i++) {
+        let child = logs[i];
+        child.dataset.index = i;
+    }
+
+    refresh();
+
+    if (currentDeltaIndex > deltaStates.length - 1) {
+        currentDeltaIndex = deltaStates.length - 1;
+    }
+}
+
+function gotoState(index) {
+    let dir = Math.sign(index - currentDeltaIndex);
+    if (dir == -1) {
+        for (let i = currentDeltaIndex; i >= index; i--) {
+            unapplyState(deltaStates[i]);
+        }
+    } else if (dir == 1) {
+        for (let i = currentDeltaIndex; i <= index; i++) {
+            applyState(deltaStates[i]);
+        }
+    }
+    currentDeltaIndex = index;
 }
 
 function applyState(deltaState) {
@@ -186,8 +292,8 @@ function refresh() {
     // TODO: other props
 }
 
-function buildState(input) {
-    let state = new GameState();
+function buildState(state, input) {
+    state.content = input;
     let result = input.match(/\[(.*?)\]/g);
     if (result != null) {
         for (let i = 0; i < result.length; i++) {
@@ -201,7 +307,6 @@ function buildState(input) {
             }
         }
     }
-    return state;
 }
 
 function changeStat(state, args) {

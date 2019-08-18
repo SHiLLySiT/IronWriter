@@ -156,16 +156,17 @@
         <!-- Event Log -->
         <div id="event-pane">
             <div id="log-history">
+                <div data-index="0"></div>
                 <div id="log-template" class="log-entry mdc-card mdc-card--outlined">
                     <div class="content">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean condimentum tellus ornare orci posuere ornare. Aenean in est at metus auctor ornare.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean condimentum tellus ornare orci posuere ornare. Aenean in est at metus auctor ornare.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean condimentum tellus ornare orci posuere ornare. Aenean in est at metus auctor ornare.</div>
                     <div class="actions">
-                        <button class="mdc-button">
+                        <button class="mdc-button edit">
                             <i class="fas fa-pencil-alt"></i>
                         </button>
-                        <button class="mdc-button">
+                        <button class="mdc-button reroll">
                             <i class="fas fa-dice-d20"></i>
                         </button>
-                        <button class="mdc-button">
+                        <button class="mdc-button delete">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -174,7 +175,7 @@
 
             <div id="entry">
                 <div class="mdc-text-field text-field mdc-text-field--fullwidth mdc-text-field--no-label mdc-text-field--textarea">
-                    <textarea id="log-content" class="mdc-text-field__input"></textarea>
+                    <textarea id="log-input" class="mdc-text-field__input"></textarea>
                     <div class="mdc-notched-outline mdc-notched-outline--upgraded">
                         <div class="mdc-notched-outline__leading"></div>
                         <div class="mdc-notched-outline__trailing"></div>
