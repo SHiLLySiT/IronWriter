@@ -260,7 +260,7 @@ function handleDeleteLog(log) {
 function gotoState(index) {
     let dir = Math.sign(index - currentDeltaIndex);
     if (dir == -1) {
-        for (let i = currentDeltaIndex; i >= index; i--) {
+        for (let i = currentDeltaIndex; i > index; i--) {
             unapplyState(deltaStates[i]);
         }
     } else if (dir == 1) {
