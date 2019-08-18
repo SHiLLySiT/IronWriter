@@ -63,6 +63,9 @@ let debilityElements = {
     tormented: undefined,
 }
 
+const MAX_EXPERIENCE = 30;
+
+let experience = undefined;
 let submitButton = undefined;
 let cancelButton = undefined;
 let saveButton = undefined;
@@ -126,8 +129,7 @@ function initDebilities() {
 }
 
 function initExperience() {
-    const MAX_EXPERIENCE = 30;
-    let experience = document.getElementById("experience");
+    experience = document.getElementById("experience");
     let template = experience.querySelector(".dot");
     let container = experience.querySelector(".wrapper");
     for (let i = 0; i < MAX_EXPERIENCE - 1; i++) {
@@ -286,10 +288,32 @@ function unapplyState(deltaState) {
 }
 
 function refresh() {
+    // stats
     for (let p in statElements) {
         statElements[p].textContent = currentState.stats[p];
     }
-    // TODO: other props
+
+    // experience
+    let dots = experience.querySelectorAll(".dot");
+    for (let i = 0; i < dots.length; i++) {
+        let empty = dots[i].querySelector(".empty");
+        let spent = dots[i].querySelector(".spent");
+        let available = dots[i].querySelector(".available");
+
+        empty.style.display = "none";
+        spent.style.display = "none";
+        available.style.display = "none";
+
+        if (i < currentState.stats.experience) {
+            if (i < currentState.stats.experienceSpent) {
+                available.style.display = "block";
+            } else {
+                spent.style.display = "block";
+            }
+        } else {
+            empty.style.display = "block";
+        }
+    }
 }
 
 function buildState(state, input) {
@@ -316,29 +340,3 @@ function changeStat(state, args) {
         state.stats[args[0]] = Number(args[1]) - currentState.stats[args[0]];
     }
 }
-
-/*
-# SYNTAX
-
-## EXAMPLE
-"The the highwayman stabs you with his sword [health -1]"
-
-## COMMANDS
-experience +1
-setname "John Doe"
-progress "highwayman"
-health +1
-spirit -1
-momentum reset
-supply 1
-wounded
-!cursed
-additem "Great Bow"
-additem Arrow 10
-roll 2d5+1
-oracle region
-> game text
-# banner text
-
-
-*/
