@@ -1,20 +1,5 @@
 "use strict";
 
-class ProgressState {
-    constructor() {
-        this.ticks = 0;
-        this.name = "";
-        this.challenge = "";
-    }
-}
-
-class ListState {
-    constructor(action, value) {
-        this.action = action;
-        this.value = value;
-    }
-}
-
 class GameState {
     constructor() {
         this.content = "";
@@ -47,11 +32,18 @@ class GameState {
             tormented: false,
         };
 
-        this.vows = {};
         this.progress = {};
         this.bonds = {};
     }
 }
+
+const CHALLENGE_RANKS = {
+    troublesome: 12,
+    dangerous: 8,
+    formidable: 4,
+    extreme: 2,
+    epic: 1,
+};
 
 let isControlPressed = false;
 
@@ -91,6 +83,7 @@ let saveButton = undefined;
 let logTemplate = undefined;
 let logInput = undefined;
 let logHistory = undefined;
+let progressCard = undefined;
 let progressTrackTemplate = undefined;
 let bondCard = undefined;
 let bondTemplate = undefined;
@@ -160,6 +153,8 @@ function initExperience() {
 }
 
 function initProgressTrack() {
+    progressCard = document.getElementById("progress-card");
+
     progressTrackTemplate = document.getElementById("progress-track-template");
     progressTrackTemplate.remove();
 
@@ -186,10 +181,10 @@ function initBonds() {
     bondTemplate.remove();
 }
 
-function createProgressTrack(name, challenge) {
+function createProgressTrack(name, rank) {
     let newTrack = progressTrackTemplate.cloneNode(true);
     newTrack.querySelector(".name").textContent = name;
-    newTrack.querySelector(".challenge").textContent = challenge;
+    newTrack.querySelector(".rank").textContent = rank;
     return newTrack;
 }
 
@@ -340,9 +335,35 @@ function applyState(deltaState) {
         let action = deltaState.bonds[p].action;
         let value = deltaState.bonds[p].value;
         if (action == "add") {
-            currentState.bonds[p] = value;
+            if (currentState.bonds[p] === undefined) {
+                currentState.bonds[p] = value;
+                currentState.stats.bonds++;
+            }
         } else if (action == "remove") {
-            delete currentState.bonds[p];
+            if (currentState.bonds[p] !== undefined) {
+                delete currentState.bonds[p];
+                currentState.stats.bonds--;
+            }
+        }
+    }
+
+    // progress
+    for (let p in deltaState.progress) {
+        let action = deltaState.progress[p].action;
+        let value = deltaState.progress[p].value;
+        if (action == "add") {
+            if (currentState.progress[p] === undefined) {
+                currentState.progress[p] = value;
+            }
+        } else if (action == "complete") {
+            if (currentState.progress[p] !== undefined) {
+                currentState.progress[p].complete = true;
+            }
+        } else if (action == "change") {
+            if (currentState.progress[p] !== undefined) {
+                let rank = currentState.progress[p].rank;
+                currentState.progress[p].value += CHALLENGE_RANKS[rank];
+            }
         }
     }
 
@@ -360,9 +381,35 @@ function unapplyState(deltaState) {
         let action = deltaState.bonds[p].action;
         let value = deltaState.bonds[p].value;
         if (action == "add") {
-            delete currentState.bonds[p];
+            if (currentState.bonds[p] !== undefined) {
+                delete currentState.bonds[p];
+                currentState.stats.bonds--;
+            }
         } else if (action == "remove") {
-            currentState.bonds[p] = value;
+            if (currentState.bonds[p] === undefined) {
+                currentState.bonds[p] = value;
+                currentState.stats.bonds++;
+            }
+        }
+    }
+
+    // progress
+    for (let p in deltaState.progress) {
+        let action = deltaState.progress[p].action;
+        let value = deltaState.progress[p].value;
+        if (action == "add") {
+            if (currentState.progress[p] !== undefined) {
+                delete currentState.progress[p];
+            }
+        } else if (action == "complete") {
+            if (currentState.progress[p] !== undefined) {
+                currentState.progress[p].complete = false;
+            }
+        } else if (action == "change") {
+            if (currentState.progress[p] !== undefined) {
+                let rank = currentState.progress[p].rank;
+                currentState.progress[p].value -= CHALLENGE_RANKS[rank];
+            }
         }
     }
 
@@ -401,14 +448,32 @@ function refresh() {
     updateProgressTrack(bondProgressTrack, currentState.stats.bonds);
 
     var list = bondCard.querySelector(".bond-list");
-    let items = list.querySelectorAll("li");
-    for (let i = 0; i < items.length; i++) {
-        items[i].remove();
+    let bonds = list.querySelectorAll("li");
+    for (let i = 0; i < bonds.length; i++) {
+        bonds[i].remove();
     }
     for (let p in currentState.bonds) {
         let bond = bondTemplate.cloneNode(true);
         bond.querySelector(".content").textContent = currentState.bonds[p];
         list.appendChild(bond);
+    }
+
+    // progress
+    var list = progressCard.querySelector(".tracks");
+    let progress = list.querySelectorAll(".progress-track");
+    for (let i = 0; i < progress.length; i++) {
+        progress[i].remove();
+    }
+    for (let p in currentState.progress) {
+        if (currentState.progress[p].complete) {
+            continue;
+        }
+        let name = currentState.progress[p].name;
+        let rank = currentState.progress[p].rank;
+        let value = currentState.progress[p].value;
+        let track = createProgressTrack(name, rank);
+        updateProgressTrack(track, value);
+        list.appendChild(track);
     }
 }
 
@@ -421,7 +486,7 @@ function buildState(state, input) {
                 .replace("[", "")
                 .replace("]", "")
                 .split(/\s(?=(?:(?:[^"]*"){2})*(?:[^"])*$)/);
-                
+
             for (let j = 0; j < args.length; j++) {
                 args[j] = args[j].replace(/^"(.+(?="$))"$/, '$1');
             };
@@ -430,6 +495,8 @@ function buildState(state, input) {
                 addBond(state, args);
             } else if (args[0] == "unbond") {
                 removeBond(state, args);
+            } else if (args[0] == "progress") {
+                progress(state, args);
             } else if (state.stats[args[0]] !== undefined) {
                 changeStat(state, args);
             } else {
@@ -439,24 +506,77 @@ function buildState(state, input) {
     }
 }
 
-function removeBond(state, args) {
-    let name = args[1].toLowerCase();
-    if (currentState.bonds[name] !== undefined) {
-        state.bonds[name] = new ListState("remove", args[1]);
-        state.stats.bonds--;
+function progress(state, args) {
+    if (args[1] == undefined) {
+        return;
     }
+
+    let id = args[1].toLowerCase();
+    let option = (args[2] === undefined) ? undefined : args[2].toLowerCase();
+
+    if (option == "complete") {
+        // flag as complete
+        state.progress[id] = { 
+            action: "complete", 
+            value: null,
+        };
+    } else if (option == "clear") {
+        // clear progress
+        // TODO: how to handle an undo of a clear?
+    } else if (option === undefined) {
+        // make progress
+        state.progress[id] = {
+            action: "change", 
+        }
+    } else {
+        // start new progress
+        let progress = {
+            name: args[1],
+            rank: option,
+            value: 0,
+            complete: false,
+        };
+    
+        state.progress[id] = {
+            action: "add", 
+            value: progress
+        };
+    }
+}
+
+function removeBond(state, args) {
+    if (args[1] == undefined) {
+        return;
+    }
+
+    let id = args[1].toLowerCase();
+    state.bonds[id] = { 
+        action: "remove",
+        value: args[1]
+    };
 }
 
 function addBond(state, args) {
-    let name = args[1].toLowerCase();
-    if (currentState.bonds[name] === undefined) {
-        state.bonds[name] = new ListState("add", args[1]);
-        state.stats.bonds++;
+    if (args[1] == undefined) {
+        return;
     }
+
+    let id = args[1].toLowerCase();
+    state.bonds[id] = { 
+        action: "add", 
+        value: args[1]
+    };
 }
 
 function changeStat(state, args) {
+    if (args[1] == undefined) {
+        return;
+    }
+
     if (args[1][0] == "+" || args[1][0] == "-") {
+        if (args[1].length == 1) {
+            return;
+        }
         state.stats[args[0]] += Number(args[1]);
     } else {
         state.stats[args[0]] = Number(args[1]) - currentState.stats[args[0]];
