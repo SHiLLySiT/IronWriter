@@ -233,7 +233,7 @@ function handleSubmitLog() {
 
 function addLog(input) {
     let newLog = logTemplate.cloneNode(true);
-    newLog.id = undefined;
+    delete newLog.id;
     newLog.dataset.index = deltaStates.length;
     newLog.querySelector(".content").innerText = input
     newLog.querySelector(".edit").addEventListener("click", () => handleEditLog(newLog));
