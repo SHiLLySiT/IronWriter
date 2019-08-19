@@ -1,42 +1,5 @@
 "use strict";
 
-class GameState {
-    constructor() {
-        this.content = "";
-
-        this.stats = {
-            edge: 0,
-            heart: 0,
-            iron: 0,
-            shadow: 0,
-            wits: 0,
-            health: 0,
-            supply: 0,
-            spirit: 0,
-            momentum: 0,
-            momentumMax: 0,
-            momentumReset: 0,
-            experience: 0,
-            experienceSpent: 0,
-            bonds: 0,
-        }
-        
-        this.debilities = {
-            wounded: false,
-            shaken: false,
-            unprepared: false,
-            encumbered: false,
-            maimed: false,
-            corrupted: false,
-            cursed: false,
-            tormented: false,
-        };
-
-        this.progress = {};
-        this.bonds = {};
-    }
-}
-
 const CHALLENGE_RANKS = {
     troublesome: 12,
     dangerous: 8,
@@ -45,36 +8,72 @@ const CHALLENGE_RANKS = {
     epic: 1,
 };
 
-let isControlPressed = false;
+const STATS = {
+    edge: 0,
+    heart: 0,
+    iron: 0,
+    shadow: 0,
+    wits: 0,
+    health: 0,
+    supply: 0,
+    spirit: 0,
+    momentum: 0,
+    momentumMax: 0,
+    momentumReset: 0,
+    experience: 0,
+    experienceSpent: 0,
+    bonds: 0,
+};
 
-let statElements = {
-    edge: undefined,
-    heart: undefined,
-    iron: undefined,
-    shadow: undefined,
-    wits: undefined,
-    health: undefined,
-    supply: undefined,
-    spirit: undefined,
-    momentum: undefined,
-    momentumMax: undefined,
-    momentumReset: undefined,
+const DEBILITIES = {
+    wounded: 0,
+    shaken: 0,
+    unprepared: 0,
+    encumbered: 0,
+    maimed: 0,
+    corrupted: 0,
+    cursed: 0,
+    tormented: 0,
+};
+
+class GameState {
+    constructor() {
+        this.stats = {};
+        for (let p in STATS) {
+            this.stats[p] = 0;
+        }
+
+        this.debilities = {};
+        for (let p in DEBILITIES) {
+            this.debilities[p] = false;
+        }
+
+        this.progress = {};
+        this.bonds = {};
+    }
+}
+
+class DeltaState {
+    constructor() {
+        this.content = "";
+        this.stats = {};
+        this.debilities = {};
+        this.progress = {};
+        this.bonds = {};
+    }
+}
+
+let statElements = {};
+for (let p in STATS) {
+    statElements[p] = undefined;
 }
 
 let debilityElements = {
     none: undefined,
-    wounded: undefined,
-    shaken: undefined,
-    unprepared: undefined,
-    encumbered: undefined,
-    maimed: undefined,
-    corrupted: undefined,
-    cursed: undefined,
-    tormented: undefined,
+};
+for (let p in DEBILITIES) {
+    debilityElements[p] = undefined;
 }
-
-const MAX_EXPERIENCE = 30;
-const MAX_PROGRESS = 10;
 
 let experience = undefined;
 let submitButton = undefined;
@@ -88,6 +87,10 @@ let progressTrackTemplate = undefined;
 let bondCard = undefined;
 let bondTemplate = undefined;
 
+const MAX_EXPERIENCE = 30;
+const MAX_PROGRESS = 10;
+
+let isControlPressed = false;
 let bondProgressTrack = undefined;
 let deltaStates = [];
 let currentState = new GameState();
@@ -124,13 +127,23 @@ function handleInit() {
     initStats();
     initBonds();
 
-    deltaStates.push(new GameState());
+    let initialState = new DeltaState();
+    for (let p in DEBILITIES) {
+        initialState.debilities[p] = false;
+    }
+    deltaStates.push(initialState);
+
     refresh();
 }
 
 function initStats() {
     for (let p in statElements) {
-        statElements[p] = document.getElementById("stat-" + p);
+        let element = document.getElementById("stat-" + p);
+        if (element === null) {
+            delete statElements[p];
+        } else {
+            statElements[p] = element;
+        }
     }
 }
 
@@ -221,7 +234,7 @@ function handleSubmitLog() {
     let input = logInput.value;
     addLog(input);
 
-    let deltaState = new GameState();
+    let deltaState = new DeltaState();
     buildState(deltaState, input);
     deltaStates.push(deltaState);
     currentDeltaIndex = deltaStates.length - 1;
@@ -277,8 +290,9 @@ function handleSaveLog() {
     editLog.querySelector(".content").innerText = logInput.value;
 
     gotoState(editLog.dataset.index - 1);
-    var state = deltaStates[editLog.dataset.index];
+    let state = new DeltaState();
     buildState(state, logInput.value);
+    deltaStates[editLog.dataset.index] = state;
     gotoState(deltaStates.length - 1);
 
     refresh();
@@ -298,9 +312,9 @@ function handleDeleteLog(log) {
 
     log.remove();
     let logs = logHistory.querySelectorAll(".log-entry");
-    for (let i = log.dataset.index - 1; i < logs.length - 1; i++) {
+    for (let i = log.dataset.index - 1; i < logs.length; i++) {
         let child = logs[i];
-        child.dataset.index = i;
+        child.dataset.index = i + 1;
     }
 
     refresh();
@@ -314,10 +328,10 @@ function gotoState(index) {
     let dir = Math.sign(index - currentDeltaIndex);
     if (dir == -1) {
         for (let i = currentDeltaIndex; i > index; i--) {
-            unapplyState(deltaStates[i]);
+            unapplyState(deltaStates[i], deltaStates[i-1]);
         }
     } else if (dir == 1) {
-        for (let i = currentDeltaIndex; i <= index; i++) {
+        for (let i = currentDeltaIndex + 1; i <= index; i++) {
             applyState(deltaStates[i]);
         }
     }
@@ -326,7 +340,7 @@ function gotoState(index) {
 
 function applyState(deltaState) {
     // stats
-    for (let p in currentState.stats) {
+    for (let p in deltaState.stats) {
         currentState.stats[p] += deltaState.stats[p];
     }
 
@@ -367,12 +381,17 @@ function applyState(deltaState) {
         }
     }
 
+    // debilities
+    for (let p in deltaState.debilities) {
+        currentState.debilities[p] = deltaState.debilities[p];
+    }
+
     // TODO: other props
 }
 
-function unapplyState(deltaState) {
+function unapplyState(deltaState, prevDeltaState) {
     // stats
-    for (let p in currentState.stats) {
+    for (let p in deltaState.stats) {
         currentState.stats[p] -= deltaState.stats[p];
     }
 
@@ -396,7 +415,6 @@ function unapplyState(deltaState) {
     // progress
     for (let p in deltaState.progress) {
         let action = deltaState.progress[p].action;
-        let value = deltaState.progress[p].value;
         if (action == "add") {
             if (currentState.progress[p] !== undefined) {
                 delete currentState.progress[p];
@@ -411,6 +429,11 @@ function unapplyState(deltaState) {
                 currentState.progress[p].value -= CHALLENGE_RANKS[rank];
             }
         }
+    }
+
+    // debilities
+    for (let p in prevDeltaState.debilities) {
+        currentState.debilities[p] = prevDeltaState.debilities[p];
     }
 
     // TODO: other props
@@ -475,6 +498,17 @@ function refresh() {
         updateProgressTrack(track, value);
         list.appendChild(track);
     }
+
+    // debilities
+    debilityElements.none.style.display = "";
+    for (let p in currentState.debilities) {
+        if (currentState.debilities[p]) {
+            debilityElements[p].style.display = "";
+            debilityElements.none.style.display = "none";
+        } else {
+            debilityElements[p].style.display = "none";
+        }
+    }
 }
 
 function buildState(state, input) {
@@ -497,12 +531,36 @@ function buildState(state, input) {
                 removeBond(state, args);
             } else if (args[0] == "progress") {
                 progress(state, args);
-            } else if (state.stats[args[0]] !== undefined) {
+            } else if (args[0] == "debility") {
+                debility(state, args);
+            } else if (STATS[args[0]] !== undefined) {
                 changeStat(state, args);
             } else {
                 // invalid command
             }
         }
+    }
+}
+
+function debility(state, args) {
+    if (args[1] == undefined) {
+        return;
+    }
+
+    if (args[1].length == 1) {
+        return;
+    }
+
+    let modifier = args[1][0];
+    let debility = args[1].substring(1);
+    if (DEBILITIES[debility] === undefined) {
+        return;
+    }
+
+    if (modifier == "+") {
+        state.debilities[debility] = true;
+    } else if (modifier == "-") {
+        state.debilities[debility] = false;
     }
 }
 
@@ -520,9 +578,6 @@ function progress(state, args) {
             action: "complete", 
             value: null,
         };
-    } else if (option == "clear") {
-        // clear progress
-        // TODO: how to handle an undo of a clear?
     } else if (option === undefined) {
         // make progress
         state.progress[id] = {
@@ -573,12 +628,5 @@ function changeStat(state, args) {
         return;
     }
 
-    if (args[1][0] == "+" || args[1][0] == "-") {
-        if (args[1].length == 1) {
-            return;
-        }
-        state.stats[args[0]] += Number(args[1]);
-    } else {
-        state.stats[args[0]] = Number(args[1]) - currentState.stats[args[0]];
-    }
+    state.stats[args[0]] = Number(args[1]);
 }
