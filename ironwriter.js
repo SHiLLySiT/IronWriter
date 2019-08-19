@@ -297,7 +297,7 @@ function handleDeleteLog(log) {
     gotoState(deltaStates.length - 1);
 
     log.remove();
-    let logs = logHistory.querySelectorAll("div");
+    let logs = logHistory.querySelectorAll(".log-entry");
     for (let i = log.dataset.index - 1; i < logs.length - 1; i++) {
         let child = logs[i];
         child.dataset.index = i;
