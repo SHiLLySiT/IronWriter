@@ -628,5 +628,9 @@ function changeStat(state, args) {
         return;
     }
 
-    state.stats[args[0]] = Number(args[1]);
+    let statName = args[0];
+    if (state.stats[statName] == undefined) {
+        state.stats[statName] = 0;    
+    }
+    state.stats[statName] += Number(args[1]);
 }
