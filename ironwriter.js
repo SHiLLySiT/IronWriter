@@ -84,7 +84,6 @@ let submitButton = undefined;
 let cancelButton = undefined;
 let saveButton = undefined;
 let rollButton = undefined;
-let oracleButton = undefined;
 let oracleMenu = undefined;
 let fictionEventTemplate = undefined;
 let rollEventTemplate = undefined;
@@ -129,11 +128,6 @@ function handleInit() {
     rollButton = document.getElementById("roll").querySelector("button");
     rollButton.addEventListener("click", handleRollClick);
 
-    oracleButton = document.getElementById("oracle").querySelector("button");
-    oracleButton.addEventListener("click", handleOracleClick);
-    oracleMenu = mdc.menu.MDCMenu.attachTo(document.querySelector("#oracle .mdc-menu"));
-    oracleMenu.hoistMenuToBody();
-
     submitButton = document.getElementById("submit-event");
     submitButton.addEventListener("click", handleSubmitEvent);
 
@@ -150,6 +144,7 @@ function handleInit() {
     initDebilities();
     initStats();
     initBonds();
+    initOracle();
 
     let initialState = new DeltaState();
     initialState.characterName = "New Character";
@@ -160,6 +155,39 @@ function handleInit() {
 
     applyState(initialState);
     refresh();
+}
+
+function initOracle() {
+    let oracleButton = document.getElementById("oracle").querySelector("button");
+    oracleButton.addEventListener("click", handleOracleClick);
+
+    let menuElement = document.querySelector("#oracle .mdc-menu");
+    oracleMenu = mdc.menu.MDCMenu.attachTo(menuElement);
+    oracleMenu.hoistMenuToBody();
+
+    let container = menuElement.querySelector("ul");
+    let template = menuElement.querySelector("li");
+    template.remove();
+
+    for (let p in ORACLE) {
+        let item = template.cloneNode(true);
+        item.querySelector("span").textContent = p;
+        item.addEventListener("click", () => {
+            oracleMenu.open = false;
+            let input = doOracleRoll(p);
+            addEvent(input, "roll");
+
+            let deltaState = new DeltaState();
+            deltaState.input = input;
+            deltaState.roll = {
+                type: "oracle",
+                oracle: p,
+            };
+            deltaStates.push(deltaState);
+            currentDeltaIndex = deltaStates.length - 1;
+        });
+        container.appendChild(item);
+    }
 }
 
 function initStats() {
@@ -207,7 +235,7 @@ function initProgressTrack() {
     for (let i = 0; i < MAX_PROGRESS - 1; i++) {
         let box = boxTemplate.cloneNode(true);
         container.insertBefore(box, container.lastChild);
-    }   
+    }
 }
 
 function initBonds() {
@@ -254,6 +282,33 @@ function handleKeyUp(event) {
     if (event.key == "Control") {
         isControlPressed = false;
     }
+}
+
+function doOracleRoll(type) {
+    let result = getOracleValue(ORACLE[type]);
+    return "Ask the Oracle (" + type + "): " + result;
+}
+function getOracleValue(value) {
+    if (typeof (value) == "string") {
+        return value;
+    } else if (Array.isArray(value)) {
+        let result = getOracleValue(value[0]);
+        for (let i = 1; i < value.length; i++) {
+            result += getOracleValue(value[i]);
+        }
+        return result;
+    }
+
+    let die = new rpgDiceRoller.DiceRoll("1d100");
+    let dieValue = die.rolls[0][0];
+    if (value[dieValue] === undefined) {
+        for (let p in value) {
+            if (dieValue < p) {
+                return getOracleValue(value[p]);
+            }
+        }
+    }
+    return getOracleValue(value[dieValue]);
 }
 
 function doActionRoll() {
@@ -307,7 +362,7 @@ function addEvent(input, type) {
         newEvent = rollEventTemplate.cloneNode(true);
         newEvent.querySelector(".reroll").addEventListener("click", () => handleRerollEvent(newEvent));
     } else if (type == "fiction") {
-        newEvent = fictionEventTemplate.cloneNode(true);        
+        newEvent = fictionEventTemplate.cloneNode(true);
         newEvent.querySelector(".edit").addEventListener("click", () => handleEditEvent(newEvent));
     } else {
         console.error(type + " not implemented!");
@@ -323,12 +378,12 @@ function addEvent(input, type) {
 }
 
 function handleRerollEvent(eventElement) {
-    
+
     let state = deltaStates[eventElement.dataset.index];
     if (state.roll.type == "action") {
         state.input = doActionRoll();
-    } else if (state.meta == "oracle") {
-        // TODO
+    } else if (state.roll.type == "oracle") {
+        state.input = doOracleRoll(state.roll.oracle);
     }
     eventElement.querySelector(".content").innerText = state.input;
 }
@@ -351,7 +406,7 @@ function handleCancelEditEvent() {
     saveButton.style.display = "none";
     cancelButton.style.display = "none";
     edittingEvent.style.backgroundColor = "#FFFFFF";
-    
+
     edittingEvent = null;
     entryInput.value = null;
 }
@@ -399,7 +454,7 @@ function gotoState(index) {
     let dir = Math.sign(index - currentDeltaIndex);
     if (dir == -1) {
         for (let i = currentDeltaIndex; i > index; i--) {
-            unapplyState(deltaStates[i], deltaStates[i-1]);
+            unapplyState(deltaStates[i], deltaStates[i - 1]);
         }
     } else if (dir == 1) {
         for (let i = currentDeltaIndex + 1; i <= index; i++) {
@@ -597,7 +652,7 @@ function refresh() {
     }
     for (let p in currentState.progress) {
         let progressTrack = currentState.progress[p];
-        let state = progressTrack.history[progressTrack.history.length-1];
+        let state = progressTrack.history[progressTrack.history.length - 1];
         if (state.complete) {
             continue;
         }
@@ -699,25 +754,25 @@ function progress(state, args) {
 
     if (option === undefined) {
         // mark progress
-        state.progress[id].push({ 
+        state.progress[id].push({
             action: "progress",
             value: 1,
         });
     } else if (!isNaN(option)) {
         // mark progress with param
-        state.progress[id].push({ 
-            action: "tick", 
+        state.progress[id].push({
+            action: "tick",
             value: Number(option),
         });
     } else if (option == "complete") {
         // flag as complete
-        state.progress[id].push({ 
-            action: "complete", 
+        state.progress[id].push({
+            action: "complete",
         });
     } else {
         // start new progress
-        state.progress[id].push({ 
-            action: "add", 
+        state.progress[id].push({
+            action: "add",
             name: args[1],
             rank: option,
         });
@@ -730,7 +785,7 @@ function removeBond(state, args) {
     }
 
     let id = args[1].toLowerCase();
-    state.bonds[id] = { 
+    state.bonds[id] = {
         action: "remove",
         value: args[1]
     };
@@ -742,8 +797,8 @@ function addBond(state, args) {
     }
 
     let id = args[1].toLowerCase();
-    state.bonds[id] = { 
-        action: "add", 
+    state.bonds[id] = {
+        action: "add",
         value: args[1]
     };
 }
@@ -755,7 +810,7 @@ function changeStat(state, args) {
 
     let statName = args[0];
     if (state.stats[statName] == undefined) {
-        state.stats[statName] = 0;    
+        state.stats[statName] = 0;
     }
     state.stats[statName] += Number(args[1]);
 }
