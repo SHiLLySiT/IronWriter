@@ -82,6 +82,9 @@ let experience = undefined;
 let submitButton = undefined;
 let cancelButton = undefined;
 let saveButton = undefined;
+let rollButton = undefined;
+let oracleButton = undefined;
+let oracleMenu = undefined;
 let logTemplate = undefined;
 let logInput = undefined;
 let logHistory = undefined;
@@ -104,17 +107,28 @@ let editLog = null;
 window.addEventListener("load", handleInit);
 
 function handleInit() {
+    window.mdc.autoInit();
+
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
 
     logInput = document.getElementById("log-input");
 
-    logHistory = document.getElementById("log-history");
+    logHistory = document.getElementById("event-history");
 
-    logTemplate = document.getElementById("log-template");
+    logTemplate = document.getElementById("fiction-event-template");
     logTemplate.remove();
 
     characterName = document.getElementById("character-name");
+
+    rollButton = document.getElementById("roll").querySelector("button");
+    // rollButton.addEventListener("click", handleRollClick);
+
+    oracleButton = document.getElementById("oracle").querySelector("button");
+    oracleButton.addEventListener("click", handleOracleClick);
+    let menuNode = document.getElementById("oracle").querySelector(".mdc-menu");
+    oracleMenu = mdc.menu.MDCMenu.attachTo(menuNode);
+    oracleMenu.hoistMenuToBody();
 
     submitButton = document.getElementById("submit-log");
     submitButton.addEventListener("click", handleSubmitLog);
@@ -238,6 +252,14 @@ function handleKeyUp(event) {
     }
 }
 
+function handleRollClick() {
+    oracleMenu.open = !oracleMenu.open;
+}
+
+function handleOracleClick() {
+    oracleMenu.open = !oracleMenu.open;
+}
+
 function handleSubmitLog() {
     let input = logInput.value;
     addLog(input);
@@ -314,7 +336,7 @@ function handleDeleteLog(log) {
     gotoState(deltaStates.length - 1);
 
     log.remove();
-    let logs = logHistory.querySelectorAll(".log-entry");
+    let logs = logHistory.querySelectorAll(".event-base");
     for (let i = log.dataset.index - 1; i < logs.length; i++) {
         let child = logs[i];
         child.dataset.index = i + 1;

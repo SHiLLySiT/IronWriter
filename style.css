@@ -35,6 +35,7 @@ html, body {
 
 body {
     background-color: rgb(245, 245, 245);
+    overflow-y: hidden;
 }
 
 #container {
@@ -102,7 +103,7 @@ body {
     text-align: center;
 }
 .debility-container .debility {
-    background-color: #D32F2F;
+    background-color: var(--mdc-theme-primary, #6200ee);
     color: white;
 }
 .debility-container .mdc-chip-set {
@@ -177,23 +178,34 @@ body {
 #event-pane {
     width: 100%;
     height: 100%;
-    padding-bottom: 30px;
 }
 
-#log-history {
-    height: 75%;
+#event-pane .flex {
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#event-history {
     overflow-y: scroll;
     padding-left: 8px;
 }
 
-#event-pane .log-entry {
+#event-pane .event-base {
     display: flex;
     flex-direction: row;
     min-height: 60px;
     margin-bottom: 8px;
 }
 
-#event-pane .log-entry .content {
+#event-pane .event-meta {
+    border-style: dashed;
+    border-color: #bebebe;
+    background-color: #e7e6e6;
+}
+
+#event-pane .event-base .content {
     padding-top: 8px;
     padding-bottom: 8px;
     padding-left: 8px;
@@ -201,7 +213,7 @@ body {
     height: 100%;
 }
 
-#event-pane .log-entry .actions {
+#event-pane .event-base .actions {
     padding-top: 4px;
     margin-right: 4px;
     width: 25px;
@@ -209,23 +221,39 @@ body {
     visibility: hidden;
 }
 
-#event-pane .log-entry button {
+#event-pane .event-base button {
     min-width: 25px;
     height: 25px;
     margin-bottom: 4px;
     padding: 4px;
 }
 
-#event-pane .log-entry:hover .actions {
+#event-pane .event-base:hover .actions {
     visibility: visible;
 }
 
 #entry {
-    margin-top: 16px;
+    min-height: 143px;
     overflow-x: hidden;
+    overflow-y: hidden;
     padding-left: 8px;
 }
 
 #entry button {
     margin: 16px 0px;
+}
+
+#entry .input {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#entry .input .action-buttons button {
+    background-color: var(--mdc-theme-primary, #6200ee);
+    color: white;
+    font-size: 1.15em;
+    padding: 0px 8px;
+    margin: 2px;
 }

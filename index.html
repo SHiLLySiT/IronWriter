@@ -164,46 +164,85 @@
 
         <!-- Event Log -->
         <div id="event-pane">
-            <div id="log-history">
-                <div data-index="0"></div>
-                <div id="log-template" class="log-entry mdc-card mdc-card--outlined">
-                    <div class="content">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean condimentum tellus ornare orci posuere ornare. Aenean in est at metus auctor ornare.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean condimentum tellus ornare orci posuere ornare. Aenean in est at metus auctor ornare.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean condimentum tellus ornare orci posuere ornare. Aenean in est at metus auctor ornare.</div>
-                    <div class="actions">
-                        <button class="mdc-button edit">
-                            <i class="fas fa-pencil-alt"></i>
-                        </button>
-                        <button class="mdc-button delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
+            <div class="flex">
+                <div id="event-history">
+                    <div data-index="0"></div>
+                    <div id="fiction-event-template" class="event-base event-fiction mdc-card mdc-card--outlined">
+                        <div class="content">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean condimentum
+                            tellus ornare orci posuere ornare. Aenean in est at metus auctor ornare.Lorem ipsum dolor
+                            sit amet, consectetur adipiscing elit. Aenean condimentum tellus ornare orci posuere ornare.
+                            Aenean in est at metus auctor ornare.Lorem ipsum dolor sit amet, consectetur adipiscing
+                            elit. Aenean condimentum tellus ornare orci posuere ornare. Aenean in est at metus auctor
+                            ornare.</div>
+                        <div class="actions">
+                            <button class="mdc-button edit">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button class="mdc-button delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="meta-event-template" class="event-base event-meta mdc-card mdc-card--outlined">
+                        <div class="content">Roll 2d4+1 = 6</div>
+                        <div class="actions">
+                            <button class="mdc-button reroll">
+                                <i class="fas fa-dice-d20"></i>
+                            </button>
+                            <button class="mdc-button delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div id="entry">
-                <div class="mdc-text-field text-field mdc-text-field--fullwidth mdc-text-field--no-label mdc-text-field--textarea">
-                    <textarea id="log-input" class="mdc-text-field__input"></textarea>
-                    <div class="mdc-notched-outline mdc-notched-outline--upgraded">
-                        <div class="mdc-notched-outline__leading"></div>
-                        <div class="mdc-notched-outline__trailing"></div>
+                <div id="entry">
+                    <div
+                        class="mdc-text-field text-field mdc-text-field--fullwidth mdc-text-field--no-label mdc-text-field--textarea">
+                        <textarea id="log-input" class="mdc-text-field__input"></textarea>
+                        <div class="mdc-notched-outline mdc-notched-outline--upgraded">
+                            <div class="mdc-notched-outline__leading"></div>
+                            <div class="mdc-notched-outline__trailing"></div>
+                        </div>
                     </div>
-                </div>
-                <div class="buttons">
-                    <button id="submit-log" class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
-                        <span class="mdc-button__label">Submit</span>
-                    </button>
-                    <button id="cancel-log" class="mdc-button" data-mdc-auto-init="MDCRipple">
-                        <span class="mdc-button__label">Cancel</span>
-                    </button>
-                    <button id="save-log" class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
-                        <span class="mdc-button__label">Save</span>
-                    </button>
+                    <div class="input">
+                        <div class="entry-buttons">
+                            <button id="submit-log" class="mdc-button mdc-button--raised"
+                                data-mdc-auto-init="MDCRipple">
+                                <span class="mdc-button__label">Submit</span>
+                            </button>
+                            <button id="cancel-log" class="mdc-button" data-mdc-auto-init="MDCRipple">
+                                <span class="mdc-button__label">Cancel</span>
+                            </button>
+                            <button id="save-log" class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
+                                <span class="mdc-button__label">Save</span>
+                            </button>
+                        </div>
+                        <div class="action-buttons mdc-chip-set">
+                            <div id="roll" class="mdc-menu-surface--anchor">
+                                <button class="mdc-chip" data-mdc-auto-init="MDCRipple">
+                                    <i class="fas fa-dice-d20"></i>
+                                </button>
+                            </div>
+                            <div id="oracle" class="mdc-menu-surface--anchor">
+                                <button class="mdc-chip" data-mdc-auto-init="MDCRipple">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <div class="mdc-menu mdc-menu-surface">
+                                    <ul class="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical"
+                                        tabindex="-1">
+                                        <li class="mdc-list-item" role="menuitem">
+                                            <span class="mdc-list-item__text">Some Oracle Table</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
-    <script>window.mdc.autoInit();</script>
 </body>
 
 </html>
