@@ -363,20 +363,38 @@ function applyState(deltaState) {
 
     // progress
     for (let p in deltaState.progress) {
-        let action = deltaState.progress[p].action;
-        let value = deltaState.progress[p].value;
-        if (action == "add") {
-            if (currentState.progress[p] === undefined) {
-                currentState.progress[p] = value;
-            }
-        } else if (action == "complete") {
-            if (currentState.progress[p] !== undefined) {
-                currentState.progress[p].complete = true;
-            }
-        } else if (action == "change") {
-            if (currentState.progress[p] !== undefined) {
-                let rank = currentState.progress[p].rank;
-                currentState.progress[p].value += CHALLENGE_RANKS[rank];
+        let list = deltaState.progress[p]
+        for (let i = 0; i < list.length; i++) {
+            let action = list[i].action;
+            if (action == "add") {
+                if (currentState.progress[p] === undefined) {
+                    currentState.progress[p] = {
+                        name: list[i].name,
+                        history: [],
+                    };
+                }
+
+                currentState.progress[p].history.push({
+                    rank: list[i].rank,
+                    value: 0,
+                    complete: false,
+                });
+            } else {
+                let progressTrack = currentState.progress[p];
+                if (progressTrack === undefined) {
+                    continue;
+                }
+
+                let state = progressTrack.history[progressTrack.history.length - 1];
+                if (action == "complete") {
+                    state.complete = true;
+                } else if (action == "progress") {
+                    let deltaValue = list[i].value;
+                    state.value = state.value + (CHALLENGE_RANKS[state.rank] * deltaValue);
+                } else if (action == "tick") {
+                    let deltaValue = list[i].value;
+                    state.value = state.value + deltaValue;
+                }
             }
         }
     }
@@ -414,19 +432,32 @@ function unapplyState(deltaState, prevDeltaState) {
 
     // progress
     for (let p in deltaState.progress) {
-        let action = deltaState.progress[p].action;
-        if (action == "add") {
-            if (currentState.progress[p] !== undefined) {
-                delete currentState.progress[p];
-            }
-        } else if (action == "complete") {
-            if (currentState.progress[p] !== undefined) {
-                currentState.progress[p].complete = false;
-            }
-        } else if (action == "change") {
-            if (currentState.progress[p] !== undefined) {
-                let rank = currentState.progress[p].rank;
-                currentState.progress[p].value -= CHALLENGE_RANKS[rank];
+        let list = deltaState.progress[p]
+        for (let i = 0; i < list.length; i++) {
+            let action = list[i].action;
+            if (action == "add") {
+                if (currentState.progress[p] !== undefined) {
+                    currentState.progress[p].history.pop();
+                    if (currentState.progress[p].history.length == 0) {
+                        delete currentState.progress[p];
+                    }
+                }
+            } else {
+                let progressTrack = currentState.progress[p];
+                if (progressTrack === undefined) {
+                    continue;
+                }
+
+                let state = progressTrack.history[progressTrack.history.length - 1];
+                if (action == "complete") {
+                    state.complete = false;
+                } else if (action == "progress") {
+                    let deltaValue = list[i].value;
+                    state.value = state.value - (CHALLENGE_RANKS[state.rank] * deltaValue);
+                } else if (action == "tick") {
+                    let deltaValue = list[i].value;
+                    state.value = state.value - deltaValue;
+                }
             }
         }
     }
@@ -488,14 +519,14 @@ function refresh() {
         progress[i].remove();
     }
     for (let p in currentState.progress) {
-        if (currentState.progress[p].complete) {
+        let progressTrack = currentState.progress[p];
+        let state = progressTrack.history[progressTrack.history.length-1];
+        if (state.complete) {
             continue;
         }
-        let name = currentState.progress[p].name;
-        let rank = currentState.progress[p].rank;
-        let value = currentState.progress[p].value;
-        let track = createProgressTrack(name, rank);
-        updateProgressTrack(track, value);
+
+        let track = createProgressTrack(progressTrack.name, state.rank);
+        updateProgressTrack(track, state.value);
         list.appendChild(track);
     }
 
@@ -572,30 +603,34 @@ function progress(state, args) {
     let id = args[1].toLowerCase();
     let option = (args[2] === undefined) ? undefined : args[2].toLowerCase();
 
-    if (option == "complete") {
+    if (state.progress[id] == undefined) {
+        state.progress[id] = [];
+    }
+
+    if (option === undefined) {
+        // mark progress
+        state.progress[id].push({ 
+            action: "progress",
+            value: 1,
+        });
+    } else if (!isNaN(option)) {
+        // mark progress with param
+        state.progress[id].push({ 
+            action: "tick", 
+            value: Number(option),
+        });
+    } else if (option == "complete") {
         // flag as complete
-        state.progress[id] = { 
+        state.progress[id].push({ 
             action: "complete", 
-            value: null,
-        };
-    } else if (option === undefined) {
-        // make progress
-        state.progress[id] = {
-            action: "change", 
-        }
+        });
     } else {
         // start new progress
-        let progress = {
+        state.progress[id].push({ 
+            action: "add", 
             name: args[1],
             rank: option,
-            value: 0,
-            complete: false,
-        };
-    
-        state.progress[id] = {
-            action: "add", 
-            value: progress
-        };
+        });
     }
 }
 
