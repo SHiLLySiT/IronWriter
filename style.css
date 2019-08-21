@@ -189,7 +189,7 @@ body {
 #event-pane .log-entry {
     display: flex;
     flex-direction: row;
-    min-height: 100px;
+    min-height: 60px;
     margin-bottom: 8px;
 }
 

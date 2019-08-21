@@ -139,7 +139,7 @@ function handleInit() {
         initialState.debilities[p] = false;
     }
     deltaStates.push(initialState);
-    
+
     applyState(initialState);
     refresh();
 }
@@ -258,7 +258,6 @@ function addLog(input) {
     newLog.dataset.index = deltaStates.length;
     newLog.querySelector(".content").innerText = input
     newLog.querySelector(".edit").addEventListener("click", () => handleEditLog(newLog));
-    newLog.querySelector(".reroll").addEventListener("click", () => handleRerollLog(newLog));
     newLog.querySelector(".delete").addEventListener("click", () => handleDeleteLog(newLog));
 
     logHistory.appendChild(newLog);
@@ -307,10 +306,6 @@ function handleSaveLog() {
 
     editLog = null;
     logInput.value = null;
-}
-
-function handleRerollLog(log) {
-    // TODO: reroll any dice rolls in log
 }
 
 function handleDeleteLog(log) {
