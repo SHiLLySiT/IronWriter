@@ -63,6 +63,7 @@ class DeltaState {
         this.debilities = {};
         this.progress = {};
         this.bonds = {};
+        this.roll = undefined;
     }
 }
 
@@ -85,9 +86,10 @@ let saveButton = undefined;
 let rollButton = undefined;
 let oracleButton = undefined;
 let oracleMenu = undefined;
-let logTemplate = undefined;
-let logInput = undefined;
-let logHistory = undefined;
+let fictionEventTemplate = undefined;
+let rollEventTemplate = undefined;
+let entryInput = undefined;
+let eventHistory = undefined;
 let progressCard = undefined;
 let progressTrackTemplate = undefined;
 let bondCard = undefined;
@@ -102,7 +104,7 @@ let bondProgressTrack = undefined;
 let deltaStates = [];
 let currentState = new GameState();
 let currentDeltaIndex = 0;
-let editLog = null;
+let edittingEvent = null;
 
 window.addEventListener("load", handleInit);
 
@@ -112,33 +114,35 @@ function handleInit() {
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
 
-    logInput = document.getElementById("log-input");
+    entryInput = document.getElementById("event-input");
 
-    logHistory = document.getElementById("event-history");
+    eventHistory = document.getElementById("event-history");
 
-    logTemplate = document.getElementById("fiction-event-template");
-    logTemplate.remove();
+    fictionEventTemplate = document.getElementById("fiction-event-template");
+    fictionEventTemplate.remove();
+
+    rollEventTemplate = document.getElementById("roll-event-template");
+    rollEventTemplate.remove();
 
     characterName = document.getElementById("character-name");
 
     rollButton = document.getElementById("roll").querySelector("button");
-    // rollButton.addEventListener("click", handleRollClick);
+    rollButton.addEventListener("click", handleRollClick);
 
     oracleButton = document.getElementById("oracle").querySelector("button");
     oracleButton.addEventListener("click", handleOracleClick);
-    let menuNode = document.getElementById("oracle").querySelector(".mdc-menu");
-    oracleMenu = mdc.menu.MDCMenu.attachTo(menuNode);
+    oracleMenu = mdc.menu.MDCMenu.attachTo(document.querySelector("#oracle .mdc-menu"));
     oracleMenu.hoistMenuToBody();
 
-    submitButton = document.getElementById("submit-log");
-    submitButton.addEventListener("click", handleSubmitLog);
+    submitButton = document.getElementById("submit-event");
+    submitButton.addEventListener("click", handleSubmitEvent);
 
-    cancelButton = document.getElementById("cancel-log");
-    cancelButton.addEventListener("click", handleCancelLog);
+    cancelButton = document.getElementById("cancel-event");
+    cancelButton.addEventListener("click", handleCancelEditEvent);
     cancelButton.style.display = "none";
 
-    saveButton = document.getElementById("save-log");
-    saveButton.addEventListener("click", handleSaveLog);
+    saveButton = document.getElementById("save-event");
+    saveButton.addEventListener("click", handleSaveEditEvent);
     saveButton.style.display = "none";
 
     initProgressTrack();
@@ -238,10 +242,10 @@ function handleKeyDown(event) {
     if (event.key == "Control") {
         isControlPressed = true;
     } else if (isControlPressed && event.key == "Enter") {
-        if (editLog == null) {
-            handleSubmitLog();
+        if (edittingEvent == null) {
+            handleSubmitEvent();
         } else {
-            handleSaveLog();
+            handleSaveEditEvent();
         }
     }
 }
@@ -252,17 +256,40 @@ function handleKeyUp(event) {
     }
 }
 
+function doActionRoll() {
+    let challenge = new rpgDiceRoller.DiceRoll("2d10");
+    let action = new rpgDiceRoller.DiceRoll("1d6");
+
+    let result = "weak";
+    if (action.rolls[0][0] < challenge.rolls[0][0] && action.rolls[0][0] < challenge.rolls[0][1]) {
+        result = "miss"
+    } else if (action.rolls[0][0] > challenge.rolls[0][0] && action.rolls[0][0] > challenge.rolls[0][1]) {
+        result = "strong"
+    }
+
+    return challenge.output + "\n" + action.output + "\n" + result;
+}
+
 function handleRollClick() {
-    oracleMenu.open = !oracleMenu.open;
+    let input = doActionRoll();
+    addEvent(input, "roll");
+
+    let deltaState = new DeltaState();
+    deltaState.input = input;
+    deltaState.roll = {
+        type: "action",
+    };
+    deltaStates.push(deltaState);
+    currentDeltaIndex = deltaStates.length - 1;
 }
 
 function handleOracleClick() {
     oracleMenu.open = !oracleMenu.open;
 }
 
-function handleSubmitLog() {
-    let input = logInput.value;
-    addLog(input);
+function handleSubmitEvent() {
+    let input = entryInput.value;
+    addEvent(input, "fiction");
 
     let deltaState = new DeltaState();
     buildState(deltaState, input);
@@ -270,75 +297,94 @@ function handleSubmitLog() {
     currentDeltaIndex = deltaStates.length - 1;
     applyState(deltaState);
 
-    logInput.value = null;
+    entryInput.value = null;
     refresh();
 }
 
-function addLog(input) {
-    let newLog = logTemplate.cloneNode(true);
-    delete newLog.id;
-    newLog.dataset.index = deltaStates.length;
-    newLog.querySelector(".content").innerText = input
-    newLog.querySelector(".edit").addEventListener("click", () => handleEditLog(newLog));
-    newLog.querySelector(".delete").addEventListener("click", () => handleDeleteLog(newLog));
+function addEvent(input, type) {
+    let newEvent = undefined;
+    if (type == "roll") {
+        newEvent = rollEventTemplate.cloneNode(true);
+        newEvent.querySelector(".reroll").addEventListener("click", () => handleRerollEvent(newEvent));
+    } else if (type == "fiction") {
+        newEvent = fictionEventTemplate.cloneNode(true);        
+        newEvent.querySelector(".edit").addEventListener("click", () => handleEditEvent(newEvent));
+    } else {
+        console.error(type + " not implemented!");
+        return;
+    }
+    delete newEvent.id;
 
-    logHistory.appendChild(newLog);
-
-    newLog.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+    newEvent.querySelector(".delete").addEventListener("click", () => handleDeleteEvent(newEvent));
+    newEvent.dataset.index = deltaStates.length;
+    newEvent.querySelector(".content").innerText = input
+    eventHistory.appendChild(newEvent);
+    newEvent.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
 }
 
-function handleEditLog(log) {
+function handleRerollEvent(eventElement) {
+    
+    let state = deltaStates[eventElement.dataset.index];
+    if (state.roll.type == "action") {
+        state.input = doActionRoll();
+    } else if (state.meta == "oracle") {
+        // TODO
+    }
+    eventElement.querySelector(".content").innerText = state.input;
+}
+
+function handleEditEvent(eventElement) {
     submitButton.style.display = "none";
     saveButton.style.display = "inline";
     cancelButton.style.display = "inline";
 
-    if (editLog != null) {
-        editLog.style.backgroundColor = "#FFFFFF";
+    if (edittingEvent != null) {
+        edittingEvent.style.backgroundColor = "#FFFFFF";
     }
-    editLog = log;
-    log.style.backgroundColor = "var(--mdc-theme-primary-light, #ff0000)";
-    logInput.value = log.querySelector(".content").innerText;
+    edittingEvent = eventElement;
+    eventElement.style.backgroundColor = "var(--mdc-theme-primary-light, #ff0000)";
+    entryInput.value = eventElement.querySelector(".content").innerText;
 }
 
-function handleCancelLog() {
+function handleCancelEditEvent() {
     submitButton.style.display = "block";
     saveButton.style.display = "none";
     cancelButton.style.display = "none";
-    editLog.style.backgroundColor = "#FFFFFF";
+    edittingEvent.style.backgroundColor = "#FFFFFF";
     
-    editLog = null;
-    logInput.value = null;
+    edittingEvent = null;
+    entryInput.value = null;
 }
 
-function handleSaveLog() {
+function handleSaveEditEvent() {
     submitButton.style.display = "block";
     saveButton.style.display = "none";
     cancelButton.style.display = "none";
-    editLog.style.backgroundColor = "#FFFFFF";
+    edittingEvent.style.backgroundColor = "#FFFFFF";
 
-    editLog.querySelector(".content").innerText = logInput.value;
+    edittingEvent.querySelector(".content").innerText = entryInput.value;
 
-    gotoState(editLog.dataset.index - 1);
+    gotoState(edittingEvent.dataset.index - 1);
     let state = new DeltaState();
-    buildState(state, logInput.value);
-    deltaStates[editLog.dataset.index] = state;
+    buildState(state, entryInput.value);
+    deltaStates[edittingEvent.dataset.index] = state;
     gotoState(deltaStates.length - 1);
 
     refresh();
 
-    editLog = null;
-    logInput.value = null;
+    edittingEvent = null;
+    entryInput.value = null;
 }
 
-function handleDeleteLog(log) {
-    gotoState(log.dataset.index - 1);
-    deltaStates.splice(log.dataset.index, 1);
+function handleDeleteEvent(eventElement) {
+    gotoState(eventElement.dataset.index - 1);
+    deltaStates.splice(eventElement.dataset.index, 1);
     gotoState(deltaStates.length - 1);
 
-    log.remove();
-    let logs = logHistory.querySelectorAll(".event-base");
-    for (let i = log.dataset.index - 1; i < logs.length; i++) {
-        let child = logs[i];
+    eventElement.remove();
+    let eventElements = eventHistory.querySelectorAll(".event-base");
+    for (let i = eventElement.dataset.index - 1; i < eventElements.length; i++) {
+        let child = eventElements[i];
         child.dataset.index = i + 1;
     }
 

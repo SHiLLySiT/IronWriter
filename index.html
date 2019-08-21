@@ -6,6 +6,7 @@
     <link href="style.css" rel="stylesheet">
     <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
     <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/rpg-dice-roller@3.1.4/lib/umd/bundle.min.js"></script>
     <script src="ironwriter.js"></script>
 </head>
 
@@ -183,7 +184,7 @@
                             </button>
                         </div>
                     </div>
-                    <div id="meta-event-template" class="event-base event-meta mdc-card mdc-card--outlined">
+                    <div id="roll-event-template" class="event-base event-roll mdc-card mdc-card--outlined">
                         <div class="content">Roll 2d4+1 = 6</div>
                         <div class="actions">
                             <button class="mdc-button reroll">
@@ -199,7 +200,7 @@
                 <div id="entry">
                     <div
                         class="mdc-text-field text-field mdc-text-field--fullwidth mdc-text-field--no-label mdc-text-field--textarea">
-                        <textarea id="log-input" class="mdc-text-field__input"></textarea>
+                        <textarea id="event-input" class="mdc-text-field__input"></textarea>
                         <div class="mdc-notched-outline mdc-notched-outline--upgraded">
                             <div class="mdc-notched-outline__leading"></div>
                             <div class="mdc-notched-outline__trailing"></div>
@@ -207,14 +208,14 @@
                     </div>
                     <div class="input">
                         <div class="entry-buttons">
-                            <button id="submit-log" class="mdc-button mdc-button--raised"
+                            <button id="submit-event" class="mdc-button mdc-button--raised"
                                 data-mdc-auto-init="MDCRipple">
                                 <span class="mdc-button__label">Submit</span>
                             </button>
-                            <button id="cancel-log" class="mdc-button" data-mdc-auto-init="MDCRipple">
+                            <button id="cancel-event" class="mdc-button" data-mdc-auto-init="MDCRipple">
                                 <span class="mdc-button__label">Cancel</span>
                             </button>
-                            <button id="save-log" class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
+                            <button id="save-event" class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
                                 <span class="mdc-button__label">Save</span>
                             </button>
                         </div>
@@ -223,6 +224,14 @@
                                 <button class="mdc-chip" data-mdc-auto-init="MDCRipple">
                                     <i class="fas fa-dice-d20"></i>
                                 </button>
+                                <div class="mdc-menu mdc-menu-surface">
+                                    <ul class="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical"
+                                        tabindex="-1">
+                                        <li class="mdc-list-item" role="menuitem">
+                                            <span class="mdc-list-item__text">Some Dice Roll</span>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
                             <div id="oracle" class="mdc-menu-surface--anchor">
                                 <button class="mdc-chip" data-mdc-auto-init="MDCRipple">
