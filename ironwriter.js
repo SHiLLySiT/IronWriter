@@ -38,6 +38,8 @@ const DEBILITIES = {
 
 class GameState {
     constructor() {
+        this.characterName = "";
+
         this.stats = {};
         for (let p in STATS) {
             this.stats[p] = 0;
@@ -55,7 +57,8 @@ class GameState {
 
 class DeltaState {
     constructor() {
-        this.content = "";
+        this.input = "";
+        this.characterName = undefined;
         this.stats = {};
         this.debilities = {};
         this.progress = {};
@@ -86,6 +89,7 @@ let progressCard = undefined;
 let progressTrackTemplate = undefined;
 let bondCard = undefined;
 let bondTemplate = undefined;
+let characterName = undefined;
 
 const MAX_EXPERIENCE = 30;
 const MAX_PROGRESS = 10;
@@ -110,6 +114,8 @@ function handleInit() {
     logTemplate = document.getElementById("log-template");
     logTemplate.remove();
 
+    characterName = document.getElementById("character-name");
+
     submitButton = document.getElementById("submit-log");
     submitButton.addEventListener("click", handleSubmitLog);
 
@@ -128,11 +134,13 @@ function handleInit() {
     initBonds();
 
     let initialState = new DeltaState();
+    initialState.characterName = "New Character";
     for (let p in DEBILITIES) {
         initialState.debilities[p] = false;
     }
     deltaStates.push(initialState);
-
+    
+    applyState(initialState);
     refresh();
 }
 
@@ -404,7 +412,10 @@ function applyState(deltaState) {
         currentState.debilities[p] = deltaState.debilities[p];
     }
 
-    // TODO: other props
+    // name
+    if (deltaState.characterName !== undefined) {
+        currentState.characterName = deltaState.characterName;
+    }
 }
 
 function unapplyState(deltaState, prevDeltaState) {
@@ -467,7 +478,10 @@ function unapplyState(deltaState, prevDeltaState) {
         currentState.debilities[p] = prevDeltaState.debilities[p];
     }
 
-    // TODO: other props
+    // name
+    if (prevDeltaState.characterName !== undefined) {
+        currentState.characterName = prevDeltaState.characterName;
+    }
 }
 
 function refresh() {
@@ -540,10 +554,13 @@ function refresh() {
             debilityElements[p].style.display = "none";
         }
     }
+
+    // name
+    characterName.textContent = currentState.characterName;
 }
 
 function buildState(state, input) {
-    state.content = input;
+    state.input = input;
     let result = input.match(/\[(.*?)\]/g);
     if (result != null) {
         for (let i = 0; i < result.length; i++) {
@@ -562,6 +579,8 @@ function buildState(state, input) {
                 removeBond(state, args);
             } else if (args[0] == "progress") {
                 progress(state, args);
+            } else if (args[0] == "rename") {
+                renameCharacter(state, args);
             } else if (args[0] == "debility") {
                 debility(state, args);
             } else if (STATS[args[0]] !== undefined) {
@@ -571,6 +590,14 @@ function buildState(state, input) {
             }
         }
     }
+}
+
+function renameCharacter(state, args) {
+    if (args[1] == undefined) {
+        return;
+    }
+
+    state.characterName = args[1];
 }
 
 function debility(state, args) {
