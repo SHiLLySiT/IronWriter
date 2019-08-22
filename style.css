@@ -264,14 +264,23 @@ body {
 }
 
 #entry {
-    min-height: 135px;
+    height: 325px;
     overflow-x: hidden;
     overflow-y: hidden;
     padding-left: 8px;
+    padding-bottom: 8px;
 }
 
 #entry button {
-    margin: 16px 0px;
+    margin: 8px 0px;
+}
+
+#event-input {
+    line-height: 1.2em;
+    height: 150px;
+    resize: none;
+    padding: 8px;
+    margin: 0px;
 }
 
 #entry .input {
