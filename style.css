@@ -35,28 +35,56 @@ html, body {
 
 body {
     background-color: rgb(245, 245, 245);
-    overflow-y: hidden;
+}
+
+.header {
+    padding: 8px;
+    padding-bottom: 0px;
+    height: 64px;
+}
+.header .mdc-card {
+    height: 100%;
+    padding: 8px;
+    padding-left: 16px;
+}
+.header .flex {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+.header button {
+    background-color: var(--mdc-theme-primary, #6200ee);
+    color: white;
+}
+.header button:hover {
+    color: white;
+}
+.header h1 {
+    padding: 0px;
+    margin: 0px;
 }
 
 #container {
     padding: 8px;
     width: 100%;
-    height: 100%;
+    height: calc(100% - 64px);
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
 }
 
 /* Character sheet style */
 #character-pane {
-    width: 400px;
+    width: 650px;
     height: 100%;
-    float: left;
     overflow-y: scroll;
 }
-
 #character-pane .mdc-card {
     padding: 0px 16px 16px 16px;
-    margin: 0px 8px 16px 0px;
+    margin: 0px 8px 8px 0px;
 }
-
 #character-pane .mdc-card > h3 {
     text-align: center;
     margin-bottom: 0;
@@ -103,7 +131,7 @@ body {
     text-align: center;
 }
 .debility-container .debility {
-    background-color: var(--mdc-theme-primary, #6200ee);
+    background-color: rgb(22, 22, 22);
     color: white;
 }
 .debility-container .mdc-chip-set {
@@ -182,6 +210,7 @@ body {
 
 #event-pane .flex {
     max-height: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -189,6 +218,7 @@ body {
 
 #event-history {
     overflow-y: scroll;
+    height: 100%;
     padding-left: 8px;
 }
 
@@ -233,7 +263,7 @@ body {
 }
 
 #entry {
-    min-height: 143px;
+    min-height: 135px;
     overflow-x: hidden;
     overflow-y: hidden;
     padding-left: 8px;

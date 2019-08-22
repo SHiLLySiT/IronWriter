@@ -40,32 +40,21 @@ const DEBILITIES = {
     tormented: 0,
 };
 
+const EventType = {
+    None: 'none',
+    Fiction: 'fiction',
+    Meta: 'meta',
+}
+
 class Session {
     constructor() {
         this.version = VERSION;
-
         this.state = new GameState();
-
-        let debilities = {};
-        for (let p in DEBILITIES) {
-            debilities[p] = false;
-        }
-
-        let initialMoment = new Moment();
-        initialMoment.addAction(new DebilityAction(debilities));
-        initialMoment.addAction(new CharacterNameAction("New Character"));
-        initialMoment.addAction(new StatAction({
-            momentum: { modifier: "=", value: 2 },
-            momentumReset: { modifier: "=", value: 2 },
-            momentumMax: { modifier: "=", value: 10 },
-            health: { modifier: "=", value: 5 },
-            supply: { modifier: "=", value: 5 },
-            spirit: { modifier: "=", value: 5 },
-        }));
-        initialMoment.applyMoment(this.state);
-
-        this.history = [initialMoment];
-        this.momentIndex = 0;
+        /**
+         * @type {Moment}
+         */
+        this.history = [];
+        this.momentIndex = -1;
     }
 
     /**
@@ -136,16 +125,19 @@ class Moment {
     
     /**
      * @param {string} input
+     * @param {string} type
      */
-    constructor(input) {
+    constructor(input, type) {
         /**
          * @type {Action[]}
          */
         this.actions = [];
-
-        this.input = input;
-
+        /**
+         * @type {GameState}
+         */
         this.state = undefined;
+        this.input = input;
+        this.type = type;
     }
 
     /**
@@ -195,8 +187,10 @@ class Action {
 }
 
 class StatAction extends Action {
+    
     constructor(stats) {
         super();
+        this.type = "StatAction";
         this.stats = stats;
     }
 
@@ -235,6 +229,7 @@ class CharacterNameAction extends Action {
      */
     constructor(newName) {
         super();
+        this.type = "CharacterNameAction";
         this.characterName = newName;
     }
 
@@ -257,6 +252,7 @@ class CharacterNameAction extends Action {
 class DebilityAction extends Action {
     constructor(debilities) {
         super();
+        this.type = "DebilityAction";
         this.debilities = debilities;
     }
 
@@ -283,6 +279,7 @@ class DebilityAction extends Action {
 class ProgressAction extends Action {
     constructor(progress) {
         super();
+        this.type = "ProgressAction";
         this.progress = progress;
     }
 
@@ -348,6 +345,7 @@ class ProgressAction extends Action {
 class BondAction extends Action {
     constructor(bonds) {
         super();
+        this.type = "BondAction";
         this.bonds = bonds;
     }
 
@@ -401,6 +399,7 @@ class OracleAction extends Action {
      */
     constructor(type) {
         super();
+        this.type = "OracleAction";
         this.oracle = {
             type: type
         };
@@ -428,6 +427,7 @@ class RollAction extends Action {
      */
     constructor(type) {
         super();
+        this.type = "RollAction";
         this.roll = {
             type: type
         };
@@ -447,6 +447,16 @@ class RollAction extends Action {
     unapplyAction(gameState, moment) {
         // rolls do not change state
     }
+}
+
+const ACTION_TYPES = {
+    "StatAction": StatAction,
+    "CharacterNameAction": CharacterNameAction,
+    "DebilityAction": DebilityAction,
+    "ProgressAction": ProgressAction,
+    "BondAction": BondAction,
+    "OracleAction": OracleAction,
+    "RollAction": RollAction,
 }
 
 let statElements = {};
@@ -503,6 +513,22 @@ function handleInit() {
 
     characterName = document.getElementById("character-name");
 
+    document.getElementById("import").addEventListener("click", () => {
+
+    });
+
+    document.getElementById("export").addEventListener("click", () => {
+
+    });
+
+    document.getElementById("new").addEventListener("click", () => {
+        newSession();
+    });
+
+    document.getElementById("help").addEventListener("click", () => {
+        window.open("https://github.com/SHiLLySiT/IronWriter");
+    });
+
     rollButton = document.getElementById("roll").querySelector("button");
     rollButton.addEventListener("click", handleRollClick);
 
@@ -524,6 +550,64 @@ function handleInit() {
     initBonds();
     initOracle();
 
+    loadSession();
+}
+
+function newSession() {
+    session = new Session();
+        
+    let debilities = {};
+    for (let p in DEBILITIES) {
+        debilities[p] = false;
+    }
+
+    let stats = {
+        momentum: { modifier: "=", value: 2 },
+        momentumReset: { modifier: "=", value: 2 },
+        momentumMax: { modifier: "=", value: 10 },
+        health: { modifier: "=", value: 5 },
+        supply: { modifier: "=", value: 5 },
+        spirit: { modifier: "=", value: 5 },
+    };
+
+    let initialMoment = new Moment("", EventType.None);
+    initialMoment.addAction(new CharacterNameAction("New Character"));
+    initialMoment.addAction(new StatAction(stats));
+    session.addMoment(initialMoment);
+
+    saveSession();
+    clearEventHistory();
+    refresh();
+}
+
+function saveSession() {
+    let str = JSON.stringify(session);
+    localStorage.setItem("session", str);
+}
+
+function loadSession() {
+    let str = localStorage.getItem("session");
+    if (str === undefined || str === null) {
+        return;
+    }
+
+    let json = JSON.parse(str);
+    session = _.merge(new Session, json);
+    for (let i = 0; i < session.history.length; i++) {
+        session.history[i] = _.merge(new Moment, session.history[i]);
+        for (let j = 0; j < session.history[i].actions.length; j++) {
+            let type = session.history[i].actions[j].type;
+            session.history[i].actions[j] = _.merge(new ACTION_TYPES[type], session.history[i].actions[j]);
+        }
+    }
+
+    for (let i = 0; i < session.history.length; i++) {
+        let moment = session.history[i];
+        if (moment.type == EventType.None) {
+            continue;
+        }
+        addEvent(i, moment.input, moment.type);
+    }
     refresh();
 }
 
@@ -542,16 +626,7 @@ function initOracle() {
     for (let type in ORACLE) {
         let item = template.cloneNode(true);
         item.querySelector("span").textContent = type;
-        item.addEventListener("click", () => {
-            oracleMenu.open = false;
-
-            let input = doOracleRoll(type);
-            addEvent(input, "roll");
-
-            let moment = new Moment(input);
-            moment.addAction(new OracleAction(type));
-            session.addMoment(moment);
-        });
+        item.addEventListener("click", () => handleSelectOracle(type));
         container.appendChild(item);
     }
 }
@@ -650,6 +725,17 @@ function handleKeyUp(event) {
     }
 }
 
+function handleSelectOracle(type) {
+    oracleMenu.open = false;
+
+    let input = doOracleRoll(type);
+    addEvent(session.history.length, input, EventType.Meta);
+
+    let moment = new Moment(input, EventType.Meta);
+    moment.addAction(new OracleAction(type));
+    session.addMoment(moment);
+    saveSession();
+}
 function doOracleRoll(type) {
     let result = getOracleValue(ORACLE[type]);
     return "Ask the Oracle (" + type + "): " + result;
@@ -693,10 +779,11 @@ function doActionRoll() {
 
 function handleRollClick() {
     let input = doActionRoll();
-    addEvent(input, "roll");
-    let moment = new Moment(input);
+    addEvent(session.history.length, input, EventType.Meta);
+    let moment = new Moment(input, EventType.Meta);
     moment.addAction(new RollAction("action"));
     session.addMoment(moment);
+    saveSession();
 }
 
 function handleOracleClick() {
@@ -705,21 +792,22 @@ function handleOracleClick() {
 
 function handleSubmitEvent() {
     let input = entryInput.value;
-    addEvent(input, "fiction");
+    addEvent(session.history.length, input, EventType.Fiction);
 
     let moment = createMoment(input);
     session.addMoment(moment);
 
     entryInput.value = null;
+    saveSession();
     refresh();
 }
 
-function addEvent(input, type) {
+function addEvent(index, input, type) {
     let newEvent = undefined;
-    if (type == "roll") {
+    if (type == EventType.Meta) {
         newEvent = rollEventTemplate.cloneNode(true);
         newEvent.querySelector(".reroll").addEventListener("click", () => handleRerollEvent(newEvent));
-    } else if (type == "fiction") {
+    } else if (type == EventType.Fiction) {
         newEvent = fictionEventTemplate.cloneNode(true);
         newEvent.querySelector(".edit").addEventListener("click", () => handleEditEvent(newEvent));
     } else {
@@ -729,7 +817,7 @@ function addEvent(input, type) {
     delete newEvent.id;
 
     newEvent.querySelector(".delete").addEventListener("click", () => handleDeleteEvent(newEvent));
-    newEvent.dataset.index = session.history.length;
+    newEvent.dataset.index = index;
     newEvent.querySelector(".content").innerText = input
     eventHistory.appendChild(newEvent);
     newEvent.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
@@ -784,6 +872,7 @@ function handleSaveEditEvent() {
     session.updateMoment(edittingEvent.dataset.index, moment);
     session.gotoPresentMoment();
 
+    saveSession();
     refresh();
 
     edittingEvent = null;
@@ -802,7 +891,15 @@ function handleDeleteEvent(eventElement) {
         child.dataset.index = i + 1;
     }
 
+    saveSession();
     refresh();
+}
+
+function clearEventHistory() {
+    let events = eventHistory.querySelectorAll("#event-history .event-base");
+    for (let i = 0; i < events.length; i++) {
+        events[i].remove();
+    }
 }
 
 function refresh() {
@@ -879,7 +976,7 @@ function refresh() {
 }
 
 function createMoment(input) {
-    let moment = new Moment(input);
+    let moment = new Moment(input, EventType.Fiction);
 
     let result = input.match(/\[(.*?)\]/g);
     if (result != null) {
