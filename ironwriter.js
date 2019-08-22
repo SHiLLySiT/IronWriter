@@ -550,7 +550,13 @@ function handleInit() {
     initBonds();
     initOracle();
 
-    loadSession();
+    let str = localStorage.getItem("session");
+    if (str === undefined || str === null) {
+        newSession();
+        refresh();
+    } else {
+        loadSession(str);
+    }
 }
 
 function newSession() {
@@ -585,12 +591,7 @@ function saveSession() {
     localStorage.setItem("session", str);
 }
 
-function loadSession() {
-    let str = localStorage.getItem("session");
-    if (str === undefined || str === null) {
-        return;
-    }
-
+function loadSession(str) {
     let json = JSON.parse(str);
     session = _.merge(new Session, json);
     for (let i = 0; i < session.history.length; i++) {
