@@ -514,11 +514,11 @@ function handleInit() {
     characterName = document.getElementById("character-name");
 
     document.getElementById("import").addEventListener("click", () => {
-
+        importSession();
     });
 
     document.getElementById("export").addEventListener("click", () => {
-
+        exportSession();
     });
 
     document.getElementById("new").addEventListener("click", () => {
@@ -584,6 +584,32 @@ function newSession() {
     saveSession();
     clearEventHistory();
     refresh();
+}
+
+function importSession() {
+    let linkElement = document.createElement("input");
+    linkElement.setAttribute("type", "file");
+    linkElement.click();
+    linkElement.addEventListener("change", () => {
+        let file = event.target.files[0];
+        var reader = new FileReader();
+        reader.readAsText(file);
+        reader.addEventListener("load", () => {
+           loadSession(reader.result); 
+        });
+    });
+}
+
+function exportSession() {
+    let str = JSON.stringify(session);
+    let uri = "data:application/json;charset=utf-8,"+ encodeURIComponent(str);
+
+    let exportFileDefaultName = "data.json";
+
+    let linkElement = document.createElement("a");
+    linkElement.setAttribute("href", uri);
+    linkElement.setAttribute("download", exportFileDefaultName);
+    linkElement.click();
 }
 
 function saveSession() {
