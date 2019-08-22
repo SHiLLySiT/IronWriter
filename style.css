@@ -78,7 +78,7 @@ body {
 
 /* Character sheet style */
 #character-pane {
-    width: 650px;
+    min-width: 375px;
     height: 100%;
     overflow-y: scroll;
 }
