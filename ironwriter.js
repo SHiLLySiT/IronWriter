@@ -1,5 +1,9 @@
 "use strict";
 
+const VERSION = "0.1";
+const MAX_EXPERIENCE = 30;
+const MAX_PROGRESS = 10;
+
 const CHALLENGE_RANKS = {
     troublesome: 12,
     dangerous: 8,
@@ -36,6 +40,79 @@ const DEBILITIES = {
     tormented: 0,
 };
 
+class Session {
+    constructor() {
+        this.version = VERSION;
+
+        this.state = new GameState();
+
+        let debilities = {};
+        for (let p in DEBILITIES) {
+            debilities[p] = false;
+        }
+
+        let initialMoment = new Moment();
+        initialMoment.addAction(new DebilityAction(debilities));
+        initialMoment.addAction(new CharacterNameAction("New Character"));
+        initialMoment.addAction(new StatAction({
+            momentum: { modifier: "=", value: 2 },
+            momentumReset: { modifier: "=", value: 2 },
+            momentumMax: { modifier: "=", value: 10 },
+            health: { modifier: "=", value: 5 },
+            supply: { modifier: "=", value: 5 },
+            spirit: { modifier: "=", value: 5 },
+        }));
+        initialMoment.applyMoment(this.state);
+
+        this.history = [initialMoment];
+        this.momentIndex = 0;
+    }
+
+    /**
+     * @param {Moment} moment
+     */
+    addMoment(moment) {
+        this.history.push(moment);
+        moment.applyMoment(this.state);
+        this.momentIndex++;
+    }
+
+    /**
+     * @param {Moment} moment
+     */
+    updateMoment(index, moment) {
+        this.history[index] = moment;
+    }
+
+    /**
+     * @param {number} index
+     */
+    removeMoment(index) {
+        this.history.splice(index, 1);
+    }
+
+    /**
+     * @param {number} index
+     */
+    gotoMoment(index) {
+        let dir = Math.sign(index - this.momentIndex);
+        if (dir == -1) {
+            for (let i = this.momentIndex; i > index; i--) {
+                this.history[i].unapplyMoment(this.state, this.history[i]);
+            }
+        } else if (dir == 1) {
+            for (let i = this.momentIndex + 1; i <= index; i++) {
+                this.history[i].applyMoment(this.state);
+            }
+        }
+        this.momentIndex = index;
+    }
+
+    gotoPresentMoment() {
+        this.gotoMoment(this.history.length - 1);
+    }
+}
+
 class GameState {
     constructor() {
         this.characterName = "";
@@ -55,15 +132,320 @@ class GameState {
     }
 }
 
-class DeltaState {
-    constructor() {
-        this.input = "";
-        this.characterName = undefined;
-        this.stats = {};
-        this.debilities = {};
-        this.progress = {};
-        this.bonds = {};
-        this.roll = undefined;
+class Moment {
+    
+    /**
+     * @param {string} input
+     */
+    constructor(input) {
+        /**
+         * @type {Action[]}
+         */
+        this.actions = [];
+
+        this.input = input;
+
+        this.state = undefined;
+    }
+
+    /**
+     * @param {Action} action
+     */
+    addAction(action) {
+        if (action === undefined) {
+            return;
+        }
+        this.actions.push(action);
+    }
+
+    /**
+     * @param {GameState} gameState
+     */
+    applyMoment(gameState) {
+        this.state = _.cloneDeep(gameState);
+        for (let i = 0; i < this.actions.length; i++) {
+            this.actions[i].applyAction(gameState);
+        }
+    }
+
+    /**
+     * @param {GameState} gameState
+     * @param {Moment} moment
+     */
+    unapplyMoment(gameState, moment) {
+        for (let i = 0; i < this.actions.length; i++) {
+            this.actions[i].unapplyAction(gameState, moment);
+        }
+    }
+}
+
+class Action {
+    /**
+     * @param {GameState} gameState
+     */
+    applyAction(gameState) {
+    }
+
+    /**
+     * @param {GameState} gameState
+     * @param {Moment} moment
+     */
+    unapplyAction(gameState, moment) {
+    }
+}
+
+class StatAction extends Action {
+    constructor(stats) {
+        super();
+        this.stats = stats;
+    }
+
+    /**
+     * @param {GameState} gameState
+     */
+    applyAction(gameState) {
+        for (let p in this.stats) {
+            if (this.stats[p].modifier == "+") {
+                gameState.stats[p] += this.stats[p].value;
+            } else if (this.stats[p].modifier == "-") {
+                gameState.stats[p] -= this.stats[p].value;
+            } else {
+                gameState.stats[p] = this.stats[p].value;
+            }
+        }
+        if (gameState.stats.momentumReset < 0) {
+            gameState.stats.momentumReset = 0;
+        }
+    }
+
+    /**
+     * @param {GameState} gameState
+     * @param {Moment} moment
+     */
+    unapplyAction(gameState, moment) {
+        for (let p in this.stats) {
+            gameState.stats[p] = moment.state.stats[p];
+        }
+    }
+}
+
+class CharacterNameAction extends Action {
+    /**
+     * @param {string} newName
+     */
+    constructor(newName) {
+        super();
+        this.characterName = newName;
+    }
+
+    /**
+     * @param {GameState} gameState
+     */
+    applyAction(gameState) {
+        gameState.characterName = this.characterName;
+    }
+
+    /**
+     * @param {GameState} gameState
+     * @param {Moment} moment
+     */
+    unapplyAction(gameState, moment) {
+        gameState.characterName = moment.state.characterName;
+    }
+}
+
+class DebilityAction extends Action {
+    constructor(debilities) {
+        super();
+        this.debilities = debilities;
+    }
+
+    /**
+     * @param {GameState} gameState
+     */
+    applyAction(gameState) {
+        for (let p in this.debilities) {
+            gameState.debilities[p] = this.debilities[p];
+        }
+    }
+
+    /**
+     * @param {GameState} gameState
+     * @param {Moment} moment
+     */
+    unapplyAction(gameState, moment) {
+        for (let p in this.debilities) {
+            gameState.debilities[p] = moment.state.debilities[p];
+        }
+    }
+}
+
+class ProgressAction extends Action {
+    constructor(progress) {
+        super();
+        this.progress = progress;
+    }
+
+    /**
+     * @param {GameState} gameState
+     */
+    applyAction(gameState) {
+        for (let p in this.progress) {
+            if (this.progress[p].action == "add") {
+                if (gameState.progress[p] !== undefined) {
+                    continue;
+                }
+
+                gameState.progress[p] = {
+                    rank: this.progress[p].rank,
+                    value: 0,
+                };
+            } else {
+                if (gameState.progress[p] === undefined) {
+                    continue;
+                }
+
+                if (this.progress[p].action == "complete") {
+                    delete gameState.progress[p];
+                } else if (this.progress[p].action == "progress") {
+                    let state = gameState.progress[p];
+                    state.value = state.value + CHALLENGE_RANKS[state.rank];
+                } else if (this.progress[p].action == "tick") {
+                    let state = gameState.progress[p];
+                    state.value = state.value + this.progress[p].value;
+                }
+            }
+        }
+    }
+
+    /**
+     * @param {GameState} gameState
+     * @param {Moment} moment
+     */
+    unapplyAction(gameState, moment) {
+        for (let p in this.progress) {
+            if (this.progress[p].action == "add") {
+                gameState.progress[p] = moment.state.progress[p];
+            } else if (this.progress[p].action == "complete") {
+                gameState.progress[p] = moment.state.progress[p];
+            } else {
+                if (gameState.progress[p] === undefined) {
+                    continue;
+                }
+
+                else if (this.progress[p].action == "progress") {
+                    let state = gameState.progress[p];
+                    state.value = state.value - CHALLENGE_RANKS[state.rank];
+                } else if (this.progress[p].action == "tick") {
+                    let state = gameState.progress[p];
+                    state.value = state.value - this.progress[p].value;
+                }
+            }
+        }
+    }
+}
+
+class BondAction extends Action {
+    constructor(bonds) {
+        super();
+        this.bonds = bonds;
+    }
+
+    /**
+     * @param {GameState} gameState
+     */
+    applyAction(gameState) {
+        for (let p in this.bonds) {
+            let action = this.bonds[p].action;
+            let value = this.bonds[p].value;
+            if (action == "add") {
+                if (gameState.bonds[p] === undefined) {
+                    gameState.bonds[p] = value;
+                    gameState.stats.bonds++;
+                }
+            } else if (action == "remove") {
+                if (gameState.bonds[p] !== undefined) {
+                    delete gameState.bonds[p];
+                    gameState.stats.bonds--;
+                }
+            }
+        }
+    }
+
+    /**
+     * @param {GameState} gameState
+     * @param {Moment} moment
+     */
+    unapplyAction(gameState, moment) {
+        for (let p in this.bonds) {
+            let action = this.bonds[p].action;
+            let value = this.bonds[p].value;
+            if (action == "add") {
+                if (moment.state.bonds[p] === undefined) {
+                    delete gameState.bonds[p];
+                    gameState.stats.bonds--;
+                }
+            } else if (action == "remove") {
+                if (moment.state.bonds[p] !== undefined) {
+                    gameState.bonds[p] = value;
+                    gameState.stats.bonds++;
+                }
+            }
+        }
+    }
+}
+
+class OracleAction extends Action {
+    /**
+     * @param {string} type
+     */
+    constructor(type) {
+        super();
+        this.oracle = {
+            type: type
+        };
+    }
+
+    /**
+     * @param {GameState} gameState
+     */
+    applyAction(gameState) {
+        // oracles do not change state
+    }
+
+   /**
+     * @param {GameState} gameState
+     * @param {Moment} moment
+     */
+    unapplyAction(gameState, moment) {
+        // oracles do not change state
+    }
+}
+
+class RollAction extends Action {
+    /**
+     * @param {string} type
+     */
+    constructor(type) {
+        super();
+        this.roll = {
+            type: type
+        };
+    }
+
+    /**
+     * @param {GameState} gameState
+     */
+    applyAction(gameState) {
+        // rolls do not change state
+    }
+
+    /**
+     * @param {GameState} gameState
+     * @param {Moment} moment
+     */
+    unapplyAction(gameState, moment) {
+        // rolls do not change state
     }
 }
 
@@ -95,15 +477,11 @@ let bondCard = undefined;
 let bondTemplate = undefined;
 let characterName = undefined;
 
-const MAX_EXPERIENCE = 30;
-const MAX_PROGRESS = 10;
-
 let isControlPressed = false;
 let bondProgressTrack = undefined;
-let deltaStates = [];
-let currentState = new GameState();
-let currentDeltaIndex = 0;
 let edittingEvent = null;
+
+let session = new Session();
 
 window.addEventListener("load", handleInit);
 
@@ -146,14 +524,6 @@ function handleInit() {
     initBonds();
     initOracle();
 
-    let initialState = new DeltaState();
-    initialState.characterName = "New Character";
-    for (let p in DEBILITIES) {
-        initialState.debilities[p] = false;
-    }
-    deltaStates.push(initialState);
-
-    applyState(initialState);
     refresh();
 }
 
@@ -169,22 +539,18 @@ function initOracle() {
     let template = menuElement.querySelector("li");
     template.remove();
 
-    for (let p in ORACLE) {
+    for (let type in ORACLE) {
         let item = template.cloneNode(true);
-        item.querySelector("span").textContent = p;
+        item.querySelector("span").textContent = type;
         item.addEventListener("click", () => {
             oracleMenu.open = false;
-            let input = doOracleRoll(p);
+
+            let input = doOracleRoll(type);
             addEvent(input, "roll");
 
-            let deltaState = new DeltaState();
-            deltaState.input = input;
-            deltaState.roll = {
-                type: "oracle",
-                oracle: p,
-            };
-            deltaStates.push(deltaState);
-            currentDeltaIndex = deltaStates.length - 1;
+            let moment = new Moment(input);
+            moment.addAction(new OracleAction(type));
+            session.addMoment(moment);
         });
         container.appendChild(item);
     }
@@ -315,11 +681,11 @@ function doActionRoll() {
     let challenge = new rpgDiceRoller.DiceRoll("2d10");
     let action = new rpgDiceRoller.DiceRoll("1d6");
 
-    let result = "weak";
+    let result = "> Weak";
     if (action.rolls[0][0] < challenge.rolls[0][0] && action.rolls[0][0] < challenge.rolls[0][1]) {
-        result = "miss"
+        result = "> Miss"
     } else if (action.rolls[0][0] > challenge.rolls[0][0] && action.rolls[0][0] > challenge.rolls[0][1]) {
-        result = "strong"
+        result = "> Strong"
     }
 
     return challenge.output + "\n" + action.output + "\n" + result;
@@ -328,14 +694,9 @@ function doActionRoll() {
 function handleRollClick() {
     let input = doActionRoll();
     addEvent(input, "roll");
-
-    let deltaState = new DeltaState();
-    deltaState.input = input;
-    deltaState.roll = {
-        type: "action",
-    };
-    deltaStates.push(deltaState);
-    currentDeltaIndex = deltaStates.length - 1;
+    let moment = new Moment(input);
+    moment.addAction(new RollAction("action"));
+    session.addMoment(moment);
 }
 
 function handleOracleClick() {
@@ -346,11 +707,8 @@ function handleSubmitEvent() {
     let input = entryInput.value;
     addEvent(input, "fiction");
 
-    let deltaState = new DeltaState();
-    buildState(deltaState, input);
-    deltaStates.push(deltaState);
-    currentDeltaIndex = deltaStates.length - 1;
-    applyState(deltaState);
+    let moment = createMoment(input);
+    session.addMoment(moment);
 
     entryInput.value = null;
     refresh();
@@ -371,21 +729,23 @@ function addEvent(input, type) {
     delete newEvent.id;
 
     newEvent.querySelector(".delete").addEventListener("click", () => handleDeleteEvent(newEvent));
-    newEvent.dataset.index = deltaStates.length;
+    newEvent.dataset.index = session.history.length;
     newEvent.querySelector(".content").innerText = input
     eventHistory.appendChild(newEvent);
     newEvent.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
 }
 
 function handleRerollEvent(eventElement) {
-
-    let state = deltaStates[eventElement.dataset.index];
-    if (state.roll.type == "action") {
-        state.input = doActionRoll();
-    } else if (state.roll.type == "oracle") {
-        state.input = doOracleRoll(state.roll.oracle);
+    let moment = session.history[eventElement.dataset.index];
+    let action = moment.actions[0];
+    if (action.roll !== undefined) {
+        if (action.roll.type == "action") {
+            moment.input = doActionRoll();
+        }
+    } else if (action.oracle !== undefined) {
+        moment.input = doOracleRoll(action.oracle.type);
     }
-    eventElement.querySelector(".content").innerText = state.input;
+    eventElement.querySelector(".content").innerText = moment.input;
 }
 
 function handleEditEvent(eventElement) {
@@ -419,11 +779,10 @@ function handleSaveEditEvent() {
 
     edittingEvent.querySelector(".content").innerText = entryInput.value;
 
-    gotoState(edittingEvent.dataset.index - 1);
-    let state = new DeltaState();
-    buildState(state, entryInput.value);
-    deltaStates[edittingEvent.dataset.index] = state;
-    gotoState(deltaStates.length - 1);
+    session.gotoMoment(edittingEvent.dataset.index - 1);
+    let moment = createMoment(entryInput.value);
+    session.updateMoment(edittingEvent.dataset.index, moment);
+    session.gotoPresentMoment();
 
     refresh();
 
@@ -432,9 +791,9 @@ function handleSaveEditEvent() {
 }
 
 function handleDeleteEvent(eventElement) {
-    gotoState(eventElement.dataset.index - 1);
-    deltaStates.splice(eventElement.dataset.index, 1);
-    gotoState(deltaStates.length - 1);
+    session.gotoMoment(eventElement.dataset.index - 1);
+    session.removeMoment(eventElement.dataset.index);
+    session.gotoPresentMoment();
 
     eventElement.remove();
     let eventElements = eventHistory.querySelectorAll(".event-base");
@@ -444,168 +803,12 @@ function handleDeleteEvent(eventElement) {
     }
 
     refresh();
-
-    if (currentDeltaIndex > deltaStates.length - 1) {
-        currentDeltaIndex = deltaStates.length - 1;
-    }
-}
-
-function gotoState(index) {
-    let dir = Math.sign(index - currentDeltaIndex);
-    if (dir == -1) {
-        for (let i = currentDeltaIndex; i > index; i--) {
-            unapplyState(deltaStates[i], deltaStates[i - 1]);
-        }
-    } else if (dir == 1) {
-        for (let i = currentDeltaIndex + 1; i <= index; i++) {
-            applyState(deltaStates[i]);
-        }
-    }
-    currentDeltaIndex = index;
-}
-
-function applyState(deltaState) {
-    // stats
-    for (let p in deltaState.stats) {
-        currentState.stats[p] += deltaState.stats[p];
-    }
-
-    // bonds
-    for (let p in deltaState.bonds) {
-        let action = deltaState.bonds[p].action;
-        let value = deltaState.bonds[p].value;
-        if (action == "add") {
-            if (currentState.bonds[p] === undefined) {
-                currentState.bonds[p] = value;
-                currentState.stats.bonds++;
-            }
-        } else if (action == "remove") {
-            if (currentState.bonds[p] !== undefined) {
-                delete currentState.bonds[p];
-                currentState.stats.bonds--;
-            }
-        }
-    }
-
-    // progress
-    for (let p in deltaState.progress) {
-        let list = deltaState.progress[p]
-        for (let i = 0; i < list.length; i++) {
-            let action = list[i].action;
-            if (action == "add") {
-                if (currentState.progress[p] === undefined) {
-                    currentState.progress[p] = {
-                        name: list[i].name,
-                        history: [],
-                    };
-                }
-
-                currentState.progress[p].history.push({
-                    rank: list[i].rank,
-                    value: 0,
-                    complete: false,
-                });
-            } else {
-                let progressTrack = currentState.progress[p];
-                if (progressTrack === undefined) {
-                    continue;
-                }
-
-                let state = progressTrack.history[progressTrack.history.length - 1];
-                if (action == "complete") {
-                    state.complete = true;
-                } else if (action == "progress") {
-                    let deltaValue = list[i].value;
-                    state.value = state.value + (CHALLENGE_RANKS[state.rank] * deltaValue);
-                } else if (action == "tick") {
-                    let deltaValue = list[i].value;
-                    state.value = state.value + deltaValue;
-                }
-            }
-        }
-    }
-
-    // debilities
-    for (let p in deltaState.debilities) {
-        currentState.debilities[p] = deltaState.debilities[p];
-    }
-
-    // name
-    if (deltaState.characterName !== undefined) {
-        currentState.characterName = deltaState.characterName;
-    }
-}
-
-function unapplyState(deltaState, prevDeltaState) {
-    // stats
-    for (let p in deltaState.stats) {
-        currentState.stats[p] -= deltaState.stats[p];
-    }
-
-    // bonds
-    for (let p in deltaState.bonds) {
-        let action = deltaState.bonds[p].action;
-        let value = deltaState.bonds[p].value;
-        if (action == "add") {
-            if (currentState.bonds[p] !== undefined) {
-                delete currentState.bonds[p];
-                currentState.stats.bonds--;
-            }
-        } else if (action == "remove") {
-            if (currentState.bonds[p] === undefined) {
-                currentState.bonds[p] = value;
-                currentState.stats.bonds++;
-            }
-        }
-    }
-
-    // progress
-    for (let p in deltaState.progress) {
-        let list = deltaState.progress[p]
-        for (let i = 0; i < list.length; i++) {
-            let action = list[i].action;
-            if (action == "add") {
-                if (currentState.progress[p] !== undefined) {
-                    currentState.progress[p].history.pop();
-                    if (currentState.progress[p].history.length == 0) {
-                        delete currentState.progress[p];
-                    }
-                }
-            } else {
-                let progressTrack = currentState.progress[p];
-                if (progressTrack === undefined) {
-                    continue;
-                }
-
-                let state = progressTrack.history[progressTrack.history.length - 1];
-                if (action == "complete") {
-                    state.complete = false;
-                } else if (action == "progress") {
-                    let deltaValue = list[i].value;
-                    state.value = state.value - (CHALLENGE_RANKS[state.rank] * deltaValue);
-                } else if (action == "tick") {
-                    let deltaValue = list[i].value;
-                    state.value = state.value - deltaValue;
-                }
-            }
-        }
-    }
-
-    // debilities
-    for (let p in prevDeltaState.debilities) {
-        currentState.debilities[p] = prevDeltaState.debilities[p];
-    }
-
-    // name
-    if (prevDeltaState.characterName !== undefined) {
-        currentState.characterName = prevDeltaState.characterName;
-    }
 }
 
 function refresh() {
     // stats
     for (let p in statElements) {
-        statElements[p].textContent = currentState.stats[p];
+        statElements[p].textContent = session.state.stats[p];
     }
 
     // experience
@@ -619,8 +822,8 @@ function refresh() {
         spent.style.display = "none";
         available.style.display = "none";
 
-        if (i < currentState.stats.experience) {
-            if (i < currentState.stats.experienceSpent) {
+        if (i < session.state.stats.experience) {
+            if (i < session.state.stats.experienceSpent) {
                 available.style.display = "block";
             } else {
                 spent.style.display = "block";
@@ -631,16 +834,16 @@ function refresh() {
     }
 
     // bonds
-    updateProgressTrack(bondProgressTrack, currentState.stats.bonds);
+    updateProgressTrack(bondProgressTrack, session.state.stats.bonds);
 
     var list = bondCard.querySelector(".bond-list");
     let bonds = list.querySelectorAll("li");
     for (let i = 0; i < bonds.length; i++) {
         bonds[i].remove();
     }
-    for (let p in currentState.bonds) {
+    for (let p in session.state.bonds) {
         let bond = bondTemplate.cloneNode(true);
-        bond.querySelector(".content").textContent = currentState.bonds[p];
+        bond.querySelector(".content").textContent = session.state.bonds[p];
         list.appendChild(bond);
     }
 
@@ -650,22 +853,20 @@ function refresh() {
     for (let i = 0; i < progress.length; i++) {
         progress[i].remove();
     }
-    for (let p in currentState.progress) {
-        let progressTrack = currentState.progress[p];
-        let state = progressTrack.history[progressTrack.history.length - 1];
-        if (state.complete) {
+    for (let p in session.state.progress) {
+        let state = session.state.progress[p];
+        if (session.state.progress[p] == undefined) {
             continue;
         }
-
-        let track = createProgressTrack(progressTrack.name, state.rank);
+        let track = createProgressTrack(state.name, state.rank);
         updateProgressTrack(track, state.value);
         list.appendChild(track);
     }
 
     // debilities
     debilityElements.none.style.display = "";
-    for (let p in currentState.debilities) {
-        if (currentState.debilities[p]) {
+    for (let p in session.state.debilities) {
+        if (session.state.debilities[p]) {
             debilityElements[p].style.display = "";
             debilityElements.none.style.display = "none";
         } else {
@@ -674,11 +875,12 @@ function refresh() {
     }
 
     // name
-    characterName.textContent = currentState.characterName;
+    characterName.textContent = session.state.characterName;
 }
 
-function buildState(state, input) {
-    state.input = input;
+function createMoment(input) {
+    let moment = new Moment(input);
+
     let result = input.match(/\[(.*?)\]/g);
     if (result != null) {
         for (let i = 0; i < result.length; i++) {
@@ -692,125 +894,156 @@ function buildState(state, input) {
             };
 
             if (args[0] == "bond") {
-                addBond(state, args);
+                moment.addAction(addBond(args));
             } else if (args[0] == "unbond") {
-                removeBond(state, args);
+                moment.addAction(removeBond(args));
             } else if (args[0] == "progress") {
-                progress(state, args);
+                moment.addAction(progress(args));
             } else if (args[0] == "rename") {
-                renameCharacter(state, args);
-            } else if (args[0] == "debility") {
-                debility(state, args);
+                moment.addAction(renameCharacter(args));
+            } else if (args[0] == "is") {
+                moment.addAction(addDebility(args));
+                moment.addAction(new StatAction({
+                    momentumMax: { modifier: "-", value: 1 },
+                    momentumReset: { modifier: "-", value: 1 },
+                }));
+            } else if (args[0] == "not") {
+                moment.addAction(removeDebility(args));
+                moment.addAction(new StatAction({
+                    momentumMax: { modifier: "+", value: 1 },
+                    momentumReset: { modifier: "+", value: 1 },
+                }));
             } else if (STATS[args[0]] !== undefined) {
-                changeStat(state, args);
+                moment.addAction(changeStat(args));
             } else {
                 // invalid command
             }
         }
     }
+
+    return moment;
 }
 
-function renameCharacter(state, args) {
+function renameCharacter(args) {
     if (args[1] == undefined) {
         return;
     }
 
-    state.characterName = args[1];
+    return new CharacterNameAction(args[1]);
 }
 
-function debility(state, args) {
+function removeDebility(args) {
     if (args[1] == undefined) {
         return;
     }
 
-    if (args[1].length == 1) {
+    let debilityName = args[1];
+    if (DEBILITIES[debilityName] === undefined) {
         return;
     }
 
-    let modifier = args[1][0];
-    let debility = args[1].substring(1);
-    if (DEBILITIES[debility] === undefined) {
-        return;
-    }
-
-    if (modifier == "+") {
-        state.debilities[debility] = true;
-    } else if (modifier == "-") {
-        state.debilities[debility] = false;
-    }
+    let debilities = {};
+    debilities[debilityName] = false;
+    return new DebilityAction(debilities);
 }
 
-function progress(state, args) {
+function addDebility(args) {
+    if (args[1] == undefined) {
+        return;
+    }
+
+    let debilityName = args[1];
+    if (DEBILITIES[debilityName] === undefined) {
+        return;
+    }
+
+    let debilities = {};
+    debilities[debilityName] = true;
+    return new DebilityAction(debilities);
+}
+
+function progress(args) {
     if (args[1] == undefined) {
         return;
     }
 
     let id = args[1].toLowerCase();
     let option = (args[2] === undefined) ? undefined : args[2].toLowerCase();
-
-    if (state.progress[id] == undefined) {
-        state.progress[id] = [];
-    }
+    let progress = {};
 
     if (option === undefined) {
         // mark progress
-        state.progress[id].push({
+        progress[id] = {
             action: "progress",
-            value: 1,
-        });
+        };
     } else if (!isNaN(option)) {
         // mark progress with param
-        state.progress[id].push({
+        progress[id] = {
             action: "tick",
             value: Number(option),
-        });
+        };
     } else if (option == "complete") {
         // flag as complete
-        state.progress[id].push({
+        progress[id] = {
             action: "complete",
-        });
+        };
     } else {
         // start new progress
-        state.progress[id].push({
+        progress[id] = {
             action: "add",
             name: args[1],
             rank: option,
-        });
+        };
     }
+
+    return new ProgressAction(progress);
 }
 
-function removeBond(state, args) {
+function removeBond(args) {
     if (args[1] == undefined) {
         return;
     }
 
     let id = args[1].toLowerCase();
-    state.bonds[id] = {
+    let bonds = {};
+    bonds[id] = {
         action: "remove",
         value: args[1]
-    };
+    }
+    return new BondAction(bonds);
 }
 
-function addBond(state, args) {
+function addBond(args) {
     if (args[1] == undefined) {
         return;
     }
 
     let id = args[1].toLowerCase();
-    state.bonds[id] = {
+    let bonds = {};
+    bonds[id] = {
         action: "add",
         value: args[1]
-    };
+    }
+    return new BondAction(bonds);
 }
 
-function changeStat(state, args) {
+function changeStat(args) {
     if (args[1] == undefined) {
         return;
     }
 
     let statName = args[0];
-    if (state.stats[statName] == undefined) {
-        state.stats[statName] = 0;
+    let stats = {};
+    
+    let modifier = "=";
+    if (args[1][0] == "+" || args[1][0] == "-") {
+        modifier = args[1][0];
     }
-    state.stats[statName] += Number(args[1]);
+
+    stats[statName] = {
+        modifier: modifier,
+        value: Math.abs(args[1]),
+    }
+
+    return new StatAction(stats);
 }
