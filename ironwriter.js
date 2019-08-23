@@ -458,9 +458,15 @@ class RollAction extends Action {
         let adds = -1;
         if (this.roll.add !== undefined && this.roll.add !== null) {
             if (this.roll.add.type == "stat") {
-                adds = moment.state.stats[this.roll.add.name];
+                adds = gameState.stats[this.roll.add.name];
             } else if (this.roll.add.type == "progress") {
-                // TODO: progress roll
+                if (gameState.progress[this.roll.add.name] === undefined) {
+                    // TODO: is there a more elegant way to handle this situation?
+                    moment.input = "Unable to resolve roll; progress track '" + this.roll.add.name + "' was removed or renamed";
+                    return;
+                }
+                let ticks = gameState.progress[this.roll.add.name].value;
+                adds = Math.floor(ticks / 4);
             }
         }
 
@@ -769,17 +775,20 @@ function initProgressTrack() {
 function initBonds() {
     bondCard = document.getElementById("bond-card")
     let bondContainer = bondCard.querySelector(".track-container");
-    bondProgressTrack = createProgressTrack(null, null);
+    bondProgressTrack = createProgressTrack(null, null, false);
     bondContainer.append(bondProgressTrack);
 
     bondTemplate = document.getElementById("bond-template");
     bondTemplate.remove();
 }
 
-function createProgressTrack(name, rank) {
+function createProgressTrack(name, rank, roll) {
     let newTrack = progressTrackTemplate.cloneNode(true);
     newTrack.querySelector(".name").textContent = name;
     newTrack.querySelector(".rank").textContent = rank;
+    let button = newTrack.querySelector("button");
+    button.style.display = (roll) ? "block" : "none";
+    button.addEventListener("click", () => handleProgressRollClick(name));
     return newTrack;
 }
 
@@ -848,6 +857,14 @@ function getOracleValue(value) {
         }
     }
     return getOracleValue(value[dieValue]);
+}
+
+function handleProgressRollClick(progressName) {
+    let moment = new Moment("", EventType.Meta);
+    moment.addAction(new RollAction({ type: "progress", name: progressName.toLowerCase() }));
+    session.addMoment(moment);
+    addEvent(session.history.length - 1, moment.input, EventType.Meta);
+    saveSession(); 
 }
 
 function handleStatRollClick(stat) {
@@ -1039,7 +1056,7 @@ function refresh() {
         if (session.state.progress[p] == undefined) {
             continue;
         }
-        let track = createProgressTrack(state.name, state.rank);
+        let track = createProgressTrack(state.name, state.rank, true);
         updateProgressTrack(track, state.value);
         list.appendChild(track);
     }

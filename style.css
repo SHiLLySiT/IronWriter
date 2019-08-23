@@ -182,7 +182,9 @@ body {
     margin: 8px;
 }
 .progress-track .wrapper {
-    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .progress-track .box {
     width: 20px;
@@ -204,6 +206,13 @@ body {
     height: 6px;
     float: left;
     background-color: black;
+}
+.progress-track button {
+    min-width: 0px;
+    margin: 0px;
+    padding: 0px;
+    width: 24px;
+    height: 24px;
 }
 
 /* bonds */

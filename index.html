@@ -9,6 +9,7 @@
     <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/rpg-dice-roller@3.1.4/lib/umd/bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-uuid@0.0.6/js-uuid.min.js"></script>
     <script src="oracles.js"></script>
     <script src="ironwriter.js"></script>
 </head>
@@ -220,6 +221,9 @@
                             <p class="rank">Dangerous</p>
                         </div>
                         <div class="wrapper">
+                            <button class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
+                                <i class="fas fa-dice-d20"></i>
+                            </button>
                             <div class="box">
                                 <div class="tick-row">
                                     <div class="tick"></div>
@@ -231,6 +235,7 @@
                                 </div>
                             </div>
                         </div>
+                        
                     </div>
                 </div>
                 <ul class="bond-list mdc-list">
