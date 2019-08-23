@@ -300,6 +300,7 @@ class ProgressAction extends Action {
 
                 gameState.progress[p] = {
                     rank: this.progress[p].rank,
+                    name: this.progress[p].name,
                     value: 0,
                 };
             } else {
