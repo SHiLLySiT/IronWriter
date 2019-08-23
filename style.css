@@ -113,9 +113,13 @@ body {
     width: 48px;
     height: 48px;
     display: inline-block;
+    
+}
+.stat-box .frame {
     border-color: black;
     border-width: 1px;
     border-style: solid;
+    margin-bottom: 2px;
 }
 .stat-box .stat-value {
     font-weight: bold;
@@ -125,6 +129,13 @@ body {
 .stat-box .stat-name {
     text-align: center;
     font-size: 0.75em
+}
+.stat-box button {
+    min-width: 0px;
+    margin: 0px;
+    padding: 0px;
+    width: 100%;
+    height: 24px;
 }
 
 /* debilities */

@@ -156,7 +156,7 @@ class Moment {
     applyMoment(gameState) {
         this.state = _.cloneDeep(gameState);
         for (let i = 0; i < this.actions.length; i++) {
-            this.actions[i].applyAction(gameState);
+            this.actions[i].applyAction(gameState, this);
         }
     }
 
@@ -166,7 +166,7 @@ class Moment {
      */
     unapplyMoment(gameState, moment) {
         for (let i = 0; i < this.actions.length; i++) {
-            this.actions[i].unapplyAction(gameState, moment);
+            this.actions[i].unapplyAction(gameState, this);
         }
     }
 }
@@ -174,8 +174,9 @@ class Moment {
 class Action {
     /**
      * @param {GameState} gameState
+     * @param {Moment} moment
      */
-    applyAction(gameState) {
+    applyAction(gameState, moment) {
     }
 
     /**
@@ -194,10 +195,11 @@ class StatAction extends Action {
         this.stats = stats;
     }
 
-    /**
+   /**
      * @param {GameState} gameState
+     * @param {Moment} moment
      */
-    applyAction(gameState) {
+    applyAction(gameState, moment) {
         for (let p in this.stats) {
             if (this.stats[p].modifier == "+") {
                 gameState.stats[p] += this.stats[p].value;
@@ -235,8 +237,9 @@ class CharacterNameAction extends Action {
 
     /**
      * @param {GameState} gameState
+     * @param {Moment} moment
      */
-    applyAction(gameState) {
+    applyAction(gameState, moment) {
         gameState.characterName = this.characterName;
     }
 
@@ -258,8 +261,9 @@ class DebilityAction extends Action {
 
     /**
      * @param {GameState} gameState
+     * @param {Moment} moment
      */
-    applyAction(gameState) {
+    applyAction(gameState, moment) {
         for (let p in this.debilities) {
             gameState.debilities[p] = this.debilities[p];
         }
@@ -285,8 +289,9 @@ class ProgressAction extends Action {
 
     /**
      * @param {GameState} gameState
+     * @param {Moment} moment
      */
-    applyAction(gameState) {
+    applyAction(gameState, moment) {
         for (let p in this.progress) {
             if (this.progress[p].action == "add") {
                 if (gameState.progress[p] !== undefined) {
@@ -351,8 +356,9 @@ class BondAction extends Action {
 
     /**
      * @param {GameState} gameState
+     * @param {Moment} moment
      */
-    applyAction(gameState) {
+    applyAction(gameState, moment) {
         for (let p in this.bonds) {
             let action = this.bonds[p].action;
             let value = this.bonds[p].value;
@@ -405,10 +411,11 @@ class OracleAction extends Action {
         };
     }
 
-    /**
+   /**
      * @param {GameState} gameState
+     * @param {Moment} moment
      */
-    applyAction(gameState) {
+    applyAction(gameState, moment) {
         // oracles do not change state
     }
 
@@ -423,21 +430,48 @@ class OracleAction extends Action {
 
 class RollAction extends Action {
     /**
-     * @param {string} type
+     * @param {string} add
      */
-    constructor(type) {
+    constructor(add) {
         super();
         this.type = "RollAction";
         this.roll = {
-            type: type
-        };
+            add: add,
+            challenge: [0, 0],
+            action: 0,
+        }
+        this.reroll();
     }
 
     /**
      * @param {GameState} gameState
+     * @param {Moment} moment
      */
-    applyAction(gameState) {
-        // rolls do not change state
+    applyAction(gameState, moment) {
+        let adds = 0;
+        if (this.roll.add !== undefined && this.roll.add !== null) {
+            if (this.roll.add.type == "stat") {
+                adds = moment.state.stats[this.roll.add.name];
+            } else if (this.roll.add.type == "progress") {
+                // TODO: progress roll
+            }
+        }
+
+        let result = "> Weak";
+        let totalAction = this.roll.action + adds;
+        if (totalAction < this.roll.challenge[0] && totalAction < this.roll.challenge[1]) {
+            result = "> Miss"
+        } else if (totalAction > this.roll.challenge[0] && totalAction > this.roll.challenge[1]) {
+            result = "> Strong"
+        }
+
+        let challengeOutput = "2d10: [" + this.roll.challenge[0] + ", " + this.roll.challenge[1] + "]";
+        let actionOutput = "1d6: [" + this.roll.action + "]";
+        if (adds > 0) {
+            actionOutput += " + " + adds + " " + this.roll.add.name + " = " + totalAction;
+        }
+
+        moment.input = challengeOutput + "\n" + actionOutput + "\n" + result;
     }
 
     /**
@@ -445,7 +479,12 @@ class RollAction extends Action {
      * @param {Moment} moment
      */
     unapplyAction(gameState, moment) {
-        // rolls do not change state
+        
+    }
+
+    reroll() {
+        this.roll.challenge = new rpgDiceRoller.DiceRoll("2d10").rolls[0];
+        this.roll.action = new rpgDiceRoller.DiceRoll("1d6").rolls[0][0];
     }
 }
 
@@ -662,12 +701,17 @@ function initOracle() {
 
 function initStats() {
     for (let p in statElements) {
-        let element = document.getElementById("stat-" + p);
-        if (element === null) {
+        let container = document.getElementById("stat-" + p);
+        if (container === null) {
             delete statElements[p];
-        } else {
-            statElements[p] = element;
+            continue;
         }
+
+        let rollButton = container.querySelector("button");
+        if (rollButton !== null) {
+            rollButton.addEventListener("click", () => handleStatRollClick(p));
+        }
+        statElements[p] = container.querySelector(".stat-value");
     }
 }
 
@@ -792,26 +836,19 @@ function getOracleValue(value) {
     return getOracleValue(value[dieValue]);
 }
 
-function doActionRoll() {
-    let challenge = new rpgDiceRoller.DiceRoll("2d10");
-    let action = new rpgDiceRoller.DiceRoll("1d6");
-
-    let result = "> Weak";
-    if (action.rolls[0][0] < challenge.rolls[0][0] && action.rolls[0][0] < challenge.rolls[0][1]) {
-        result = "> Miss"
-    } else if (action.rolls[0][0] > challenge.rolls[0][0] && action.rolls[0][0] > challenge.rolls[0][1]) {
-        result = "> Strong"
-    }
-
-    return challenge.output + "\n" + action.output + "\n" + result;
+function handleStatRollClick(stat) {
+    let moment = new Moment("", EventType.Meta);
+    moment.addAction(new RollAction({ type: "stat", name: stat }));
+    session.addMoment(moment);
+    addEvent(session.history.length - 1, moment.input, EventType.Meta);
+    saveSession();  
 }
 
 function handleRollClick() {
-    let input = doActionRoll();
-    addEvent(session.history.length, input, EventType.Meta);
-    let moment = new Moment(input, EventType.Meta);
-    moment.addAction(new RollAction("action"));
+    let moment = new Moment("", EventType.Meta);
+    moment.addAction(new RollAction({ type: "none" }));
     session.addMoment(moment);
+    addEvent(session.history.length - 1, moment.input, EventType.Meta);
     saveSession();
 }
 
@@ -856,9 +893,8 @@ function handleRerollEvent(eventElement) {
     let moment = session.history[eventElement.dataset.index];
     let action = moment.actions[0];
     if (action.roll !== undefined) {
-        if (action.roll.type == "action") {
-            moment.input = doActionRoll();
-        }
+        action.reroll();
+        action.applyAction(session.state, moment);
     } else if (action.oracle !== undefined) {
         moment.input = doOracleRoll(action.oracle.type);
     }
@@ -900,6 +936,11 @@ function handleSaveEditEvent() {
     let moment = createMoment(entryInput.value);
     session.updateMoment(edittingEvent.dataset.index, moment);
     session.gotoPresentMoment();
+
+    let eventElements = eventHistory.querySelectorAll(".event-base");
+    for (let i = edittingEvent.dataset.index - 1; i < eventElements.length; i++) {
+        eventElements[i].querySelector(".content").innerText = session.history[i + 1].input;
+    }
 
     saveSession();
     refresh();

@@ -20,8 +20,8 @@
                 <div>
                     <h1>IronWriter</h1>
                     <i id="version">v0.0.0</i>
-                </div>  
-            
+                </div>
+
                 <div class="mdc-chip-set">
                     <button id="new" class="mdc-chip" title="New Session" data-mdc-auto-init="MDCRipple">
                         <i class="fas fa-file"></i>
@@ -62,25 +62,55 @@
                 <div class="stat-container status-group">
                     <div>Stats</div>
                     <div class="wrapper">
-                        <div class="stat-box">
-                            <div id="stat-edge" class="stat-value">0</div>
-                            <div class="stat-name">Edge</div>
+                        <div id="stat-edge" class="stat-box">
+                            <div class="frame">
+                                <div class="stat-value">0</div>
+                                <div class="stat-name">Edge</div>
+                            </div>
+                            <button class="mdc-button mdc-button--raised"
+                                data-mdc-auto-init="MDCRipple">
+                                <i class="fas fa-dice-d20"></i>
+                            </button>
                         </div>
-                        <div class="stat-box">
-                            <div id="stat-heart" class="stat-value">0</div>
-                            <div class="stat-name">Heart</div>
+                        <div id="stat-heart" class="stat-box">
+                            <div class="frame">
+                                <div class="stat-value">0</div>
+                                <div class="stat-name">Heart</div>
+                            </div>
+                            <button class="mdc-button mdc-button--raised"
+                                data-mdc-auto-init="MDCRipple">
+                                <i class="fas fa-dice-d20"></i>
+                            </button>
                         </div>
-                        <div class="stat-box">
-                            <div id="stat-iron" class="stat-value">0</div>
-                            <div class="stat-name">Iron</div>
+                        <div id="stat-iron" class="stat-box">
+                            <div class="frame">
+                                <div class="stat-value">0</div>
+                                <div class="stat-name">Iron</div>
+                            </div>
+                            <button class="mdc-button mdc-button--raised"
+                                data-mdc-auto-init="MDCRipple">
+                                <i class="fas fa-dice-d20"></i>
+                            </button>
                         </div>
-                        <div class="stat-box">
-                            <div id="stat-shadow" class="stat-value">0</div>
-                            <div class="stat-name">Shadow</div>
+                        <div id="stat-shadow" class="stat-box">
+                            <div class="frame">
+                                <div class="stat-value">0</div>
+                                <div class="stat-name">Shadow</div>
+                            </div>
+                            <button class="mdc-button mdc-button--raised"
+                                data-mdc-auto-init="MDCRipple">
+                                <i class="fas fa-dice-d20"></i>
+                            </button>
                         </div>
-                        <div class="stat-box">
-                            <div id="stat-wits" class="stat-value">0</div>
-                            <div class="stat-name">Wits</div>
+                        <div id="stat-wits" class="stat-box">
+                            <div class="frame">
+                                <div class="stat-value">0</div>
+                                <div class="stat-name">Wits</div>
+                            </div>
+                            <button class="mdc-button mdc-button--raised"
+                                data-mdc-auto-init="MDCRipple">
+                                <i class="fas fa-dice-d20"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -88,17 +118,35 @@
                 <div class="stat-container status-group">
                     <div>Status</div>
                     <div class="wrapper">
-                        <div class="stat-box">
-                            <div id="stat-health" class="stat-value">0</div>
-                            <div class="stat-name">Health</div>
+                        <div id="stat-health" class="stat-box">
+                            <div class="frame">
+                                <div class="stat-value">0</div>
+                                <div class="stat-name">Health</div>
+                            </div>
+                            <button class="mdc-button mdc-button--raised"
+                                data-mdc-auto-init="MDCRipple">
+                                <i class="fas fa-dice-d20"></i>
+                            </button>
                         </div>
-                        <div class="stat-box">
-                            <div id="stat-supply" class="stat-value">0</div>
-                            <div class="stat-name">Supply</div>
+                        <div id="stat-supply" class="stat-box">
+                            <div class="frame">
+                                <div id="stat-supply" class="stat-value">0</div>
+                                <div class="stat-name">Supply</div>
+                            </div>
+                            <button class="mdc-button mdc-button--raised"
+                                data-mdc-auto-init="MDCRipple">
+                                <i class="fas fa-dice-d20"></i>
+                            </button>
                         </div>
-                        <div class="stat-box">
-                            <div id="stat-spirit" class="stat-value">0</div>
-                            <div class="stat-name">Spirit</div>
+                        <div id="stat-spirit" class="stat-box">
+                            <div class="frame">
+                                <div class="stat-value">0</div>
+                                <div class="stat-name">Spirit</div>
+                            </div>
+                            <button class="mdc-button mdc-button--raised"
+                                data-mdc-auto-init="MDCRipple">
+                                <i class="fas fa-dice-d20"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -106,17 +154,23 @@
                 <div class="stat-container status-group">
                     <div>Momentum</div>
                     <div class="wrapper">
-                        <div class="stat-box">
-                            <div id="stat-momentum" class="stat-value">0</div>
-                            <div class="stat-name">Current</div>
+                        <div id="stat-momentum" class="stat-box">
+                            <div class="frame">
+                                <div class="stat-value">0</div>
+                                <div class="stat-name">Current</div>
+                            </div>
                         </div>
-                        <div class="stat-box">
-                            <div id="stat-momentumMax" class="stat-value">0</div>
-                            <div class="stat-name">Max</div>
+                        <div id="stat-momentumMax" class="stat-box">
+                            <div class="frame">
+                                <div class="stat-value">0</div>
+                                <div class="stat-name">Max</div>
+                            </div>
                         </div>
-                        <div class="stat-box">
-                            <div id="stat-momentumReset" class="stat-value">0</div>
-                            <div class="stat-name">Reset</div>
+                        <div id="stat-momentumReset" class="stat-box">
+                            <div class="frame">
+                                <div class="stat-value">0</div>
+                                <div class="stat-name">Reset</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -244,7 +298,8 @@
                             <button id="cancel-event" class="mdc-button" data-mdc-auto-init="MDCRipple">
                                 <span class="mdc-button__label">Cancel</span>
                             </button>
-                            <button id="save-event" class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
+                            <button id="save-event" class="mdc-button mdc-button--raised"
+                                data-mdc-auto-init="MDCRipple">
                                 <span class="mdc-button__label">Save</span>
                             </button>
                         </div>
@@ -253,14 +308,6 @@
                                 <button class="mdc-chip" title="Dice Roll" data-mdc-auto-init="MDCRipple">
                                     <i class="fas fa-dice-d20"></i>
                                 </button>
-                                <div class="mdc-menu mdc-menu-surface">
-                                    <ul class="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical"
-                                        tabindex="-1">
-                                        <li class="mdc-list-item" role="menuitem">
-                                            <span class="mdc-list-item__text">Some Dice Roll</span>
-                                        </li>
-                                    </ul>
-                                </div>
                             </div>
                             <div id="oracle" class="mdc-menu-surface--anchor">
                                 <button class="mdc-chip" title="Oracle" data-mdc-auto-init="MDCRipple">
