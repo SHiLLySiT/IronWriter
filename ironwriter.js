@@ -581,7 +581,7 @@ function handleInit() {
     });
 
     document.getElementById("help").addEventListener("click", () => {
-        window.open("https://github.com/SHiLLySiT/IronWriter");
+        window.open("https://github.com/SHiLLySiT/IronWriter/blob/master/readme.md");
     });
 
     modeSwitch = new mdc.switchControl.MDCSwitch(document.getElementById("mode-switch"));
