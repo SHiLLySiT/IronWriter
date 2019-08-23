@@ -693,7 +693,7 @@ function initOracle() {
     template.remove();
 
     for (let type in ORACLE) {
-        if (type == "DIVIDER") {
+        if (ORACLE[type] == null) {
             let node = document.createElement("li");
             node.classList.add("mdc-list-divider");
             node.setAttribute("role", "separator");
