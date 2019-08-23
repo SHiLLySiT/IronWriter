@@ -692,10 +692,17 @@ function initOracle() {
     template.remove();
 
     for (let type in ORACLE) {
-        let item = template.cloneNode(true);
-        item.querySelector("span").textContent = type;
-        item.addEventListener("click", () => handleSelectOracle(type));
-        container.appendChild(item);
+        if (type == "DIVIDER") {
+            let node = document.createElement("li");
+            node.classList.add("mdc-list-divider");
+            node.setAttribute("role", "separator");
+            container.appendChild(node);
+        } else {
+            let item = template.cloneNode(true);
+            item.querySelector("span").textContent = type;
+            item.addEventListener("click", () => handleSelectOracle(type));
+            container.appendChild(item);
+        }
     }
 }
 
