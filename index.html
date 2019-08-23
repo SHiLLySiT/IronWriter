@@ -273,9 +273,12 @@
                             </button>
                         </div>
                     </div>
-                    <div id="roll-event-template" class="event-base event-roll mdc-card mdc-card--outlined">
+                    <div id="meta-event-template" class="event-base event-roll mdc-card mdc-card--outlined">
                         <div class="content">Roll 2d4+1 = 6</div>
                         <div class="actions">
+                            <button class="mdc-button edit">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
                             <button class="mdc-button reroll">
                                 <i class="fas fa-dice-d20"></i>
                             </button>
@@ -309,6 +312,20 @@
                                 <span class="mdc-button__label">Save</span>
                             </button>
                         </div>
+                        
+                        <div class="mode-switch-container">
+                            <label for="basic-switch">fiction</label>
+                            <div id="mode-switch" class="mdc-switch">
+                                <div class="mdc-switch__track"></div>
+                                <div class="mdc-switch__thumb-underlay">
+                                    <div class="mdc-switch__thumb">
+                                        <input type="checkbox" id="basic-switch" class="mdc-switch__native-control" role="switch">
+                                    </div>
+                                </div>
+                            </div>
+                            <label for="basic-switch">meta</label>
+                        </div>
+
                         <div class="action-buttons mdc-chip-set">
                             <div id="roll" class="mdc-menu-surface--anchor">
                                 <button class="mdc-chip" title="Dice Roll" data-mdc-auto-init="MDCRipple">

@@ -44,6 +44,7 @@ const EventType = {
     None: 'none',
     Fiction: 'fiction',
     Meta: 'meta',
+    Roll: 'roll',
 }
 
 class Session {
@@ -530,7 +531,7 @@ let saveButton = undefined;
 let rollButton = undefined;
 let oracleMenu = undefined;
 let fictionEventTemplate = undefined;
-let rollEventTemplate = undefined;
+let metaEventTemplate = undefined;
 let entryInput = undefined;
 let eventHistory = undefined;
 let progressCard = undefined;
@@ -538,10 +539,12 @@ let progressTrackTemplate = undefined;
 let bondCard = undefined;
 let bondTemplate = undefined;
 let characterName = undefined;
+let modeSwitch = undefined;
 
 let isControlPressed = false;
 let bondProgressTrack = undefined;
 let edittingEvent = null;
+let oldEditEventColor = null;
 
 let session = new Session();
 
@@ -560,8 +563,8 @@ function handleInit() {
     fictionEventTemplate = document.getElementById("fiction-event-template");
     fictionEventTemplate.remove();
 
-    rollEventTemplate = document.getElementById("roll-event-template");
-    rollEventTemplate.remove();
+    metaEventTemplate = document.getElementById("meta-event-template");
+    metaEventTemplate.remove();
 
     characterName = document.getElementById("character-name");
 
@@ -580,6 +583,8 @@ function handleInit() {
     document.getElementById("help").addEventListener("click", () => {
         window.open("https://github.com/SHiLLySiT/IronWriter");
     });
+
+    modeSwitch = new mdc.switchControl.MDCSwitch(document.getElementById("mode-switch"));
 
     document.getElementById("version").textContent = "v" + VERSION;
 
@@ -806,12 +811,16 @@ function updateProgressTrack(track, value) {
 function handleKeyDown(event) {
     if (event.key == "Control") {
         isControlPressed = true;
-    } else if (isControlPressed && event.key == "Enter") {
-        if (edittingEvent == null) {
-            handleSubmitEvent();
-        } else {
-            handleSaveEditEvent();
-        }
+    } else if (isControlPressed) {
+        if (event.key == "Enter") {
+            if (edittingEvent == null) {
+                handleSubmitEvent();
+            } else {
+                handleSaveEditEvent();
+            }
+        } else if (event.key == "m") {
+            modeSwitch.checked = !modeSwitch.checked;
+        } 
     }
 }
 
@@ -825,9 +834,9 @@ function handleSelectOracle(type) {
     oracleMenu.open = false;
 
     let input = doOracleRoll(type);
-    addEvent(session.history.length, input, EventType.Meta);
+    addEvent(session.history.length, input, EventType.Roll);
 
-    let moment = new Moment(input, EventType.Meta);
+    let moment = new Moment(input, EventType.Roll);
     moment.addAction(new OracleAction(type));
     session.addMoment(moment);
     saveSession();
@@ -860,26 +869,26 @@ function getOracleValue(value) {
 }
 
 function handleProgressRollClick(progressName) {
-    let moment = new Moment("", EventType.Meta);
+    let moment = new Moment("", EventType.Roll);
     moment.addAction(new RollAction({ type: "progress", name: progressName.toLowerCase() }));
     session.addMoment(moment);
-    addEvent(session.history.length - 1, moment.input, EventType.Meta);
+    addEvent(session.history.length - 1, moment.input, EventType.Roll);
     saveSession(); 
 }
 
 function handleStatRollClick(stat) {
-    let moment = new Moment("", EventType.Meta);
+    let moment = new Moment("", EventType.Roll);
     moment.addAction(new RollAction({ type: "stat", name: stat }));
     session.addMoment(moment);
-    addEvent(session.history.length - 1, moment.input, EventType.Meta);
+    addEvent(session.history.length - 1, moment.input, EventType.Roll);
     saveSession();  
 }
 
 function handleRollClick() {
-    let moment = new Moment("", EventType.Meta);
+    let moment = new Moment("", EventType.Roll);
     moment.addAction(new RollAction({ type: "none" }));
     session.addMoment(moment);
-    addEvent(session.history.length - 1, moment.input, EventType.Meta);
+    addEvent(session.history.length - 1, moment.input, EventType.Roll);
     saveSession();
 }
 
@@ -889,9 +898,10 @@ function handleOracleClick() {
 
 function handleSubmitEvent() {
     let input = entryInput.value;
-    addEvent(session.history.length, input, EventType.Fiction);
+    let type = (modeSwitch.checked) ? EventType.Meta : EventType.Fiction
+    addEvent(session.history.length, input, type);
 
-    let moment = createMoment(input);
+    let moment = createMoment(input, type);
     session.addMoment(moment);
 
     entryInput.value = null;
@@ -902,8 +912,13 @@ function handleSubmitEvent() {
 function addEvent(index, input, type) {
     let newEvent = undefined;
     if (type == EventType.Meta) {
-        newEvent = rollEventTemplate.cloneNode(true);
+        newEvent = metaEventTemplate.cloneNode(true);
+        newEvent.querySelector(".edit").addEventListener("click", () => handleEditEvent(newEvent));
+        newEvent.querySelector(".reroll").remove();
+    } else if (type == EventType.Roll) {
+        newEvent = metaEventTemplate.cloneNode(true);
         newEvent.querySelector(".reroll").addEventListener("click", () => handleRerollEvent(newEvent));
+        newEvent.querySelector(".edit").remove();
     } else if (type == EventType.Fiction) {
         newEvent = fictionEventTemplate.cloneNode(true);
         newEvent.querySelector(".edit").addEventListener("click", () => handleEditEvent(newEvent));
@@ -938,9 +953,10 @@ function handleEditEvent(eventElement) {
     cancelButton.style.display = "inline";
 
     if (edittingEvent != null) {
-        edittingEvent.style.backgroundColor = "#FFFFFF";
+        edittingEvent.style.backgroundColor = oldEditEventColor;
     }
     edittingEvent = eventElement;
+    oldEditEventColor = eventElement.style.backgroundColor;
     eventElement.style.backgroundColor = "var(--mdc-theme-primary-light, #ff0000)";
     entryInput.value = eventElement.querySelector(".content").innerText;
 }
@@ -949,7 +965,7 @@ function handleCancelEditEvent() {
     submitButton.style.display = "block";
     saveButton.style.display = "none";
     cancelButton.style.display = "none";
-    edittingEvent.style.backgroundColor = "#FFFFFF";
+    edittingEvent.style.backgroundColor = oldEditEventColor;
 
     edittingEvent = null;
     entryInput.value = null;
@@ -959,12 +975,13 @@ function handleSaveEditEvent() {
     submitButton.style.display = "block";
     saveButton.style.display = "none";
     cancelButton.style.display = "none";
-    edittingEvent.style.backgroundColor = "#FFFFFF";
+    edittingEvent.style.backgroundColor = oldEditEventColor;
 
     edittingEvent.querySelector(".content").innerText = entryInput.value;
 
     session.gotoMoment(edittingEvent.dataset.index - 1);
-    let moment = createMoment(entryInput.value);
+
+    let moment = createMoment(entryInput.value, session.history[edittingEvent.dataset.index].type);
     session.updateMoment(edittingEvent.dataset.index, moment);
     session.gotoPresentMoment();
 
@@ -1076,8 +1093,8 @@ function refresh() {
     characterName.textContent = session.state.characterName;
 }
 
-function createMoment(input) {
-    let moment = new Moment(input, EventType.Fiction);
+function createMoment(input, type) {
+    let moment = new Moment(input, type);
 
     let result = input.match(/\[(.*?)\]/g);
     if (result != null) {

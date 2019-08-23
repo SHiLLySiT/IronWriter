@@ -19,9 +19,17 @@ IronWriter is an open-source writing tool for solo playthroughs of the free tabl
 * As you write your story, progress is automatically saved to your browser's local storage so be aware that clearing site data __will__ delete your save data.
 * Use the import/export feature to safely store the your session outside of your browser.
 
+# Keyboard Shortcuts
+* CTRL+Enter: Submit event
+* CTRL+M: Toggle mode
+
 # Overview
 IronWriter represents moments or blocks of content in your stories as "events". How much content you choose to write into each card is up to you.
 ![alt text](/docs/images/events.gif)
+
+There are two types of events - "fiction" and "meta". Functionally there is nothing different about them, but they are visually distinct to help separate your fictional elements from your meta actions during your session such as moves, question prompts, etc.
+
+![alt text](/docs/images/mode-toggle.gif)
 
 IronWriter uses special markup (referred to as "tags") to automatically update the character sheet. These tags should always be wrapped in square brackets `[]` but this documentation will leave them out for brevity. 
 

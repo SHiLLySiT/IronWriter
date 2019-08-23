@@ -17,7 +17,7 @@
     --mdc-theme-primary: #F44336;
     --mdc-theme-primary-light:#FFCDD2;
     --mdc-theme-primary-dark: #D32F2F;
-    --mdc-theme-secondary: #FF5252;
+    --mdc-theme-secondary: #F44336;
     --mdc-theme-background: #FFFFFF;
     --mdc-theme-text-primary-on-background: #212121;
     --mdc-theme-text-secondary-on-background: #757575;
@@ -301,6 +301,15 @@ body {
     resize: none;
     padding: 8px;
     margin: 0px;
+}
+
+#entry .mode-switch-container {
+    font-size: 0.75em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 110px;
 }
 
 #entry .input {
