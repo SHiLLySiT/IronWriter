@@ -455,7 +455,7 @@ class RollAction extends Action {
      * @param {Moment} moment
      */
     applyAction(gameState, moment) {
-        let adds = 0;
+        let adds = -1;
         if (this.roll.add !== undefined && this.roll.add !== null) {
             if (this.roll.add.type == "stat") {
                 adds = moment.state.stats[this.roll.add.name];
@@ -474,7 +474,7 @@ class RollAction extends Action {
 
         let challengeOutput = "2d10: [" + this.roll.challenge[0] + ", " + this.roll.challenge[1] + "]";
         let actionOutput = "1d6: [" + this.roll.action + "]";
-        if (adds > 0) {
+        if (adds > -1) {
             actionOutput += " + " + adds + " " + this.roll.add.name + " = " + totalAction;
         }
 
