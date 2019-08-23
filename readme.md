@@ -125,7 +125,10 @@ progress <name> {modifier}
         * `formidable` Each progress is 4 ticks.
         * `extreme` Each progress is 2 ticks.
         * `epic` Each progress is 1 ticks.
-    * `+/-ticks` The number of ticks to add or remove.
+    * `{+/-}<value>` The number of ticks to add, remove, or set.
+        * `+` Adds the specified `value`.
+        * `-` Subtracts the specified `value`.
+        * Not specifying a modifier sets the number of ticks to the specified `value`.
     * Not passing this parameter automatically adds the number of ticks as specified by the `challenge rank`.
 
 ### Examples
@@ -133,6 +136,7 @@ progress <name> {modifier}
 * `progress "Kill Martu"` Increases the number of ticks by 4.
 * `progress "Kill Martu" +1` Increases the number of ticks by 1.
 * `progress "Kill Martu" -2` Decreases the number of ticks by 2.
+* `progress "Kill Martu" 8` Sets the number of ticks to 8.
 * `progress "Kill Martu" complete` Removes the progress track called "Kill Jorge".
 
 ## Making Bonds

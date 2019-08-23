@@ -315,7 +315,13 @@ class ProgressAction extends Action {
                     state.value = state.value + CHALLENGE_RANKS[state.rank];
                 } else if (this.progress[p].action == "tick") {
                     let state = gameState.progress[p];
-                    state.value = state.value + this.progress[p].value;
+                    if (this.progress[p].modifier == "+") {
+                        state.value += this.progress[p].value;
+                    } else if (this.progress[p].modifier == "-") {
+                        state.value -= this.progress[p].value;
+                    } else {
+                        state.value = this.progress[p].value;
+                    }
                 }
             }
         }
@@ -1153,9 +1159,14 @@ function progress(args) {
         };
     } else if (!isNaN(option)) {
         // mark progress with param
+        let modifier = "=";
+        if (option[0] == "+" || option[0] == "-") {
+            modifier = option[0];
+        }
         progress[id] = {
             action: "tick",
-            value: Number(option),
+            modifier: modifier,
+            value: Math.abs(option),
         };
     } else if (option == "complete") {
         // flag as complete
