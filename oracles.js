@@ -852,7 +852,7 @@ const ORACLE = {
         97: "Cowardly",
         98: "Obsessed",
         99: "Careless",
-        00: "Ironsworn",
+        100: "Ironsworn",
     },
     "Ironlander Names": [
         {
@@ -955,7 +955,7 @@ const ORACLE = {
             97: "Temir",
             98: "Bas",
             99: "Sabine",
-            00: "Tallus",
+            100: "Tallus",
         },
         {
             1: " Segura",
@@ -1057,7 +1057,7 @@ const ORACLE = {
             97: " Irsia",
             98: " Kayu",
             99: " Bevan",
-            00: " Chandra",
+            100: " Chandra",
         }
     ],
     "Elf Names": {
@@ -1110,7 +1110,7 @@ const ORACLE = {
         94: "Anunna",
         96: "Otani",
         98: "Ditani",
-        00: "Faraza",
+        100: "Faraza",
     },
     "Giant Names": {
         4: "Chony",
@@ -1137,7 +1137,7 @@ const ORACLE = {
         88: "Baku",
         92: "Tuban",
         96: "Qudan",
-        00: "Denua",
+        100: "Denua",
     },
     "Varou Names": {
         4: "Vata",
@@ -1164,7 +1164,7 @@ const ORACLE = {
         88: "Muko",
         92: "Dreko",
         96: "Aleko",
-        00: "Vojan",
+        100: "Vojan",
     },
     "Troll Names": {
         4: "Rattle",
@@ -1191,7 +1191,7 @@ const ORACLE = {
         88: "Vrusk",
         92: "Snuffle",
         96: "Leech",
-        00: "Herk",
+        100: "Herk",
     },
     "Combat Action": {
         3: "Compel a surrender",
@@ -1211,7 +1211,7 @@ const ORACLE = {
         78: "Create an opportunity",
         89: "Attack with precision",
         99: "Attack with power",
-        00: "Take a completely unexpected action",
+        100: "Take a completely unexpected action",
     },
     "Mystic Backlash": {
         4: "Your ritual has the opposite affect",
@@ -1238,7 +1238,7 @@ const ORACLE = {
         88: "Your ritual causes creatures to exhibit strange or aggressive behavior",
         92: "You are tormented by an apparition from your past",
         96: "You are wracked with sudden sickness",
-        00: "Roll twice more on this table. Both results occur. If they are the same result, make it worse.",
+        100: "Roll twice more on this table. Both results occur. If they are the same result, make it worse.",
     },
     "Major Plot Twist": {
         5: "It was all a diversion",
@@ -1260,13 +1260,13 @@ const ORACLE = {
         85: "The truth of a relationship is revealed",
         90: "Two seemingly unrelated situations are shown to be connected",
         95: "Unexpected powers or abilities are revealed",
-        00: "Roll twice more on this table. Both results occur. If they are the same result, make it more dramatic.",
+        100: "Roll twice more on this table. Both results occur. If they are the same result, make it more dramatic.",
     },
     "Challenge Rank": {
         20: "Troublesome",
         55: "Dangerous",
         80: "Formidable",
         93: "Extreme",
-        00: "Epic",
+        100: "Epic",
     },
 }
