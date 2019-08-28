@@ -438,16 +438,20 @@ class OracleAction extends Action {
 
 class RollAction extends Action {
     /**
-     * @param {string} add
+     * @param {string} statAdd
+     * @param {number} genericAdd
+     * @param {string} source
      */
-    constructor(add) {
+    constructor(statAdd, genericAdd, source) {
         super();
         this.type = "RollAction";
-        this.roll = {
-            add: add,
-            challenge: [0, 0],
-            action: 0,
-        }
+        
+        this.statAddName = statAdd;
+        this.genericAdd = Number(genericAdd);
+        this.challenge = [0, 0];
+        this.action = 0;
+        this.source = source;
+        
         this.reroll();
     }
 
@@ -456,33 +460,42 @@ class RollAction extends Action {
      * @param {Moment} moment
      */
     applyAction(gameState, moment) {
-        let adds = -1;
-        if (this.roll.add !== undefined && this.roll.add !== null) {
-            if (this.roll.add.type == "stat") {
-                adds = gameState.stats[this.roll.add.name];
-            } else if (this.roll.add.type == "progress") {
-                if (gameState.progress[this.roll.add.name] === undefined) {
-                    // TODO: is there a more elegant way to handle this situation?
-                    moment.input = "Unable to resolve roll; progress track '" + this.roll.add.name + "' was removed or renamed";
-                    return;
-                }
-                let ticks = gameState.progress[this.roll.add.name].value;
-                adds = Math.floor(ticks / 4);
-            }
+        let statAddValue = 0;
+        if (this.statAddName.length > 0) {
+            statAddValue = gameState.stats[this.statAddName];
         }
 
-        let result = "> Weak";
-        let totalAction = this.roll.action + adds;
-        if (totalAction < this.roll.challenge[0] && totalAction < this.roll.challenge[1]) {
+        let actionValue = this.action;
+        if (this.source != "actionDie" && moment.state.progress[this.source] !== undefined) {
+            let ticks = moment.state.progress[this.source].value;
+            actionValue = Math.floor(ticks / 4);
+        }
+
+        let result = "> Weak Hit";
+        let totalAction = actionValue + statAddValue + this.genericAdd;
+        if (totalAction < this.challenge[0] && totalAction < this.challenge[1]) {
             result = "> Miss"
-        } else if (totalAction > this.roll.challenge[0] && totalAction > this.roll.challenge[1]) {
-            result = "> Strong"
+        } else if (totalAction > this.challenge[0] && totalAction > this.challenge[1]) {
+            result = "> Strong Hit"
         }
 
-        let challengeOutput = "2d10: [" + this.roll.challenge[0] + ", " + this.roll.challenge[1] + "]";
-        let actionOutput = "1d6: [" + this.roll.action + "]";
-        if (adds > -1) {
-            actionOutput += " + " + adds + " " + this.roll.add.name + " = " + totalAction;
+        let challengeOutput = "Challenge: [" + this.challenge[0] + ", " + this.challenge[1] + "]";
+
+        let actionOutput = undefined;
+        if (this.source != "actionDie" && moment.state.progress[this.source] !== undefined) {
+            actionOutput = "Action: " + actionValue + " (" + moment.state.progress[this.source].name + ")";
+        } else {
+            actionOutput = "Action: [" + actionValue + "]";
+        }
+        
+        if (this.statAddName.length > 0) {
+            actionOutput += " + " + statAddValue + " (" + this.statAddName + ")";
+        }
+        if (this.genericAdd > 0) {
+            actionOutput += " + " + this.genericAdd;
+        }
+        if (this.statAddName.length > 0 || this.genericAdd > 0) {
+            actionOutput += " = " + totalAction;
         }
 
         moment.input = challengeOutput + "\n" + actionOutput + "\n" + result;
@@ -497,8 +510,8 @@ class RollAction extends Action {
     }
 
     reroll() {
-        this.roll.challenge = new rpgDiceRoller.DiceRoll("2d10").rolls[0];
-        this.roll.action = new rpgDiceRoller.DiceRoll("1d6").rolls[0][0];
+        this.challenge = new rpgDiceRoller.DiceRoll("2d10").rolls[0];
+        this.action = new rpgDiceRoller.DiceRoll("1d6").rolls[0][0];
     }
 }
 
@@ -528,8 +541,6 @@ let experience = undefined;
 let submitButton = undefined;
 let cancelButton = undefined;
 let saveButton = undefined;
-let rollButton = undefined;
-let oracleMenu = undefined;
 let fictionEventTemplate = undefined;
 let metaEventTemplate = undefined;
 let entryInput = undefined;
@@ -540,6 +551,7 @@ let bondCard = undefined;
 let bondTemplate = undefined;
 let characterName = undefined;
 let modeSwitch = undefined;
+let rollSourceTemplate = undefined;
 
 let isControlPressed = false;
 let bondProgressTrack = undefined;
@@ -552,6 +564,42 @@ window.addEventListener("load", handleInit);
 
 function handleInit() {
     window.mdc.autoInit();
+
+    let rollContainer = document.querySelector(".roll-container");
+    rollContainer.style.display = "none";
+
+    let oracleContainer = document.querySelector(".oracle-container");
+    oracleContainer.style.display = "none";
+
+    let storyContainer = document.querySelector(".story-container");
+
+    let inputTab = new mdc.tabBar.MDCTabBar(document.querySelector(".mdc-tab-bar"));
+    inputTab.listen("MDCTabBar:activated", (event) => {
+        if (event.detail.index == 0) {
+            storyContainer.style.display = "block";
+            rollContainer.style.display = "none";
+            oracleContainer.style.display = "none";
+        } else if (event.detail.index == 1) {
+            storyContainer.style.display = "none";
+            rollContainer.style.display = "flex";
+            oracleContainer.style.display = "none";
+        } else if (event.detail.index == 2) {
+            storyContainer.style.display = "none";
+            rollContainer.style.display = "none";
+            oracleContainer.style.display = "flex";
+        }
+
+        // update dropdown menu widths
+        let menus = document.querySelectorAll(".js-resize-menu");
+        for (let i = 0; i < menus.length; i++) {
+            let id = menus[i].dataset.selectId;
+            let width = document.getElementById(id).offsetWidth;
+            menus[i].style.width = width + "px";
+        }
+
+        let select = document.getElementById("roll-source").MDCSelect;
+        select.foundation_.adapter_.setSelectedIndex(select.selectedIndex);
+    });
 
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
@@ -588,9 +636,6 @@ function handleInit() {
 
     document.getElementById("version").textContent = "v" + VERSION;
 
-    rollButton = document.getElementById("roll").querySelector("button");
-    rollButton.addEventListener("click", handleRollClick);
-
     submitButton = document.getElementById("submit-event");
     submitButton.addEventListener("click", handleSubmitEvent);
 
@@ -607,6 +652,7 @@ function handleInit() {
     initDebilities();
     initStats();
     initBonds();
+    initRoll();
     initOracle();
 
     let str = localStorage.getItem("session");
@@ -697,30 +743,36 @@ function loadSession(str) {
     refresh();
 }
 
+function initRoll() {
+    rollSourceTemplate = document.getElementById("roll-source-template");
+
+    let rollSource = document.getElementById("roll-source");
+    let rollStats = document.getElementById("roll-stats");
+    let rollAdd = document.getElementById("roll-add");
+
+    let rollButton = document.getElementById("roll");
+    rollButton.addEventListener("click", () => {
+        doRoll(rollStats.MDCSelect.value, rollAdd.value, rollSource.MDCSelect.value);
+    });
+    
+    let rollResetButton = document.getElementById("roll-reset");
+    rollResetButton.addEventListener("click", () => {
+        rollSource.MDCSelect.selectedIndex = 0;
+        rollStats.MDCSelect.selectedIndex = -1;
+        rollAdd.value = "";
+    });
+}
+
 function initOracle() {
-    let oracleButton = document.getElementById("oracle").querySelector("button");
-    oracleButton.addEventListener("click", handleOracleClick);
-
-    let menuElement = document.querySelector("#oracle .mdc-menu");
-    oracleMenu = mdc.menu.MDCMenu.attachTo(menuElement);
-    oracleMenu.hoistMenuToBody();
-
-    let container = menuElement.querySelector("ul");
-    let template = menuElement.querySelector("li");
+    let template = document.getElementById("oracle-template");
+    let container = template.parentElement;
     template.remove();
 
     for (let type in ORACLE) {
-        if (ORACLE[type] == null) {
-            let node = document.createElement("li");
-            node.classList.add("mdc-list-divider");
-            node.setAttribute("role", "separator");
-            container.appendChild(node);
-        } else {
-            let item = template.cloneNode(true);
-            item.querySelector("span").textContent = type;
-            item.addEventListener("click", () => handleSelectOracle(type));
-            container.appendChild(item);
-        }
+        let item = template.cloneNode(true);
+        item.querySelector(".js-value").textContent = type;
+        item.addEventListener("click", () => handleSelectOracle(type));
+        container.appendChild(item);
     }
 }
 
@@ -831,8 +883,6 @@ function handleKeyUp(event) {
 }
 
 function handleSelectOracle(type) {
-    oracleMenu.open = false;
-
     let input = doOracleRoll(type);
     addEvent(session.history.length, input, EventType.Roll);
 
@@ -868,32 +918,12 @@ function getOracleValue(value) {
     return getOracleValue(value[dieValue]);
 }
 
-function handleProgressRollClick(progressName) {
+function doRoll(statAdd, genericAdd, source) {
     let moment = new Moment("", EventType.Roll);
-    moment.addAction(new RollAction({ type: "progress", name: progressName.toLowerCase() }));
-    session.addMoment(moment);
-    addEvent(session.history.length - 1, moment.input, EventType.Roll);
-    saveSession(); 
-}
-
-function handleStatRollClick(stat) {
-    let moment = new Moment("", EventType.Roll);
-    moment.addAction(new RollAction({ type: "stat", name: stat }));
-    session.addMoment(moment);
-    addEvent(session.history.length - 1, moment.input, EventType.Roll);
-    saveSession();  
-}
-
-function handleRollClick() {
-    let moment = new Moment("", EventType.Roll);
-    moment.addAction(new RollAction({ type: "none" }));
+    moment.addAction(new RollAction(statAdd, genericAdd, source));
     session.addMoment(moment);
     addEvent(session.history.length - 1, moment.input, EventType.Roll);
     saveSession();
-}
-
-function handleOracleClick() {
-    oracleMenu.open = !oracleMenu.open;
 }
 
 function handleSubmitEvent() {
@@ -938,11 +968,13 @@ function addEvent(index, input, type) {
 function handleRerollEvent(eventElement) {
     let moment = session.history[eventElement.dataset.index];
     let action = moment.actions[0];
-    if (action.roll !== undefined) {
+    if (action instanceof RollAction) {
         action.reroll();
         action.applyAction(session.state, moment);
-    } else if (action.oracle !== undefined) {
+    } else if (action instanceof OracleAction) {
         moment.input = doOracleRoll(action.oracle.type);
+    } else {
+        console.log("Unable to reroll " + typeof(action));
     }
     eventElement.querySelector(".content").innerText = moment.input;
 }
@@ -1051,20 +1083,20 @@ function refresh() {
     // bonds
     updateProgressTrack(bondProgressTrack, session.state.stats.bonds);
 
-    var list = bondCard.querySelector(".bond-list");
-    let bonds = list.querySelectorAll("li");
+    let bondList = bondCard.querySelector(".bond-list");
+    let bonds = bondList.querySelectorAll("li");
     for (let i = 0; i < bonds.length; i++) {
         bonds[i].remove();
     }
     for (let p in session.state.bonds) {
         let bond = bondTemplate.cloneNode(true);
         bond.querySelector(".content").textContent = session.state.bonds[p];
-        list.appendChild(bond);
+        bondList.appendChild(bond);
     }
 
-    // progress
-    var list = progressCard.querySelector(".tracks");
-    let progress = list.querySelectorAll(".progress-track");
+    // progress cards
+    let progressList = progressCard.querySelector(".tracks");
+    let progress = progressList.querySelectorAll(".progress-track");
     for (let i = 0; i < progress.length; i++) {
         progress[i].remove();
     }
@@ -1075,8 +1107,30 @@ function refresh() {
         }
         let track = createProgressTrack(state.name, state.rank, true);
         updateProgressTrack(track, state.value);
-        list.appendChild(track);
+        progressList.appendChild(track);
     }
+
+    // progress sources
+    let sourceList = document.getElementById("roll-source-list");
+    let sources = sourceList.querySelectorAll("li");
+    for (let i = 0; i < sources.length; i++) {
+        sources[i].remove();
+    }
+    let e = rollSourceTemplate.cloneNode(true);
+    e.textContent = "Action Die";
+    e.dataset.value = "actionDie";
+    e.classList.add("mdc-list-item--selected");
+    sourceList.appendChild(e);
+    for (let p in session.state.progress) {
+        if (session.state.progress[p] === undefined) {
+            continue;
+        }
+        let e = rollSourceTemplate.cloneNode(true);
+        e.textContent = session.state.progress[p].name;
+        e.dataset.value = p;
+        sourceList.appendChild(e);
+    }
+    
 
     // debilities
     debilityElements.none.style.display = "";

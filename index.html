@@ -232,7 +232,8 @@
                             <p class="rank">Dangerous</p>
                         </div>
                         <div class="wrapper">
-                            <button title="Roll +progress" class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
+                            <button title="Roll +progress" class="mdc-button mdc-button--raised"
+                                data-mdc-auto-init="MDCRipple">
                                 <i class="fas fa-dice-d20"></i>
                             </button>
                             <div class="box">
@@ -246,7 +247,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                     </div>
                 </div>
                 <ul class="bond-list mdc-list">
@@ -300,63 +301,189 @@
                     </div>
                 </div>
 
-                <div id="entry">
-                    <div
-                        class="mdc-text-field text-field mdc-text-field--fullwidth mdc-text-field--no-label mdc-text-field--textarea">
-                        <textarea id="event-input" class="mdc-text-field__input"></textarea>
-                        <div class="mdc-notched-outline mdc-notched-outline--upgraded">
-                            <div class="mdc-notched-outline__leading"></div>
-                            <div class="mdc-notched-outline__trailing"></div>
-                        </div>
-                    </div>
-                    <div class="input">
-                        <div class="entry-buttons">
-                            <button id="submit-event" class="mdc-button mdc-button--raised"
-                                data-mdc-auto-init="MDCRipple">
-                                <span class="mdc-button__label">Submit</span>
-                            </button>
-                            <button id="cancel-event" class="mdc-button" data-mdc-auto-init="MDCRipple">
-                                <span class="mdc-button__label">Cancel</span>
-                            </button>
-                            <button id="save-event" class="mdc-button mdc-button--raised"
-                                data-mdc-auto-init="MDCRipple">
-                                <span class="mdc-button__label">Save</span>
-                            </button>
-                        </div>
-                        
-                        <div class="mode-switch-container">
-                            <label for="basic-switch">fiction</label>
-                            <div id="mode-switch" class="mdc-switch">
-                                <div class="mdc-switch__track"></div>
-                                <div class="mdc-switch__thumb-underlay">
-                                    <div class="mdc-switch__thumb">
-                                        <input type="checkbox" id="basic-switch" class="mdc-switch__native-control" role="switch">
-                                    </div>
+                <div id="entry" class="mdc-card">
+                    <div class="entry-tab mdc-tab-bar" role="tablist">
+                        <div class="mdc-tab-scroller">
+                            <div class="mdc-tab-scroller__scroll-area">
+                                <div class="mdc-tab-scroller__scroll-content">
+                                    <button class="mdc-tab mdc-tab--active" role="tab" aria-selected="true"
+                                        tabindex="0">
+                                        <span class="mdc-tab__content">
+                                            <i class="mdc-tab__icon fas fa-book"></i>
+                                            <span class="mdc-tab__text-label">Story</span>
+                                        </span>
+                                        <span class="mdc-tab-indicator mdc-tab-indicator--active">
+                                            <span
+                                                class="mdc-tab-indicator__content mdc-tab-indicator__content--underline"></span>
+                                        </span>
+                                        <span class="mdc-tab__ripple"></span>
+                                    </button>
+                                    <button class="mdc-tab" role="tab" aria-selected="false" tabindex="1">
+                                        <span class="mdc-tab__content">
+                                            <i class="mdc-tab__icon fas fa-dice-d20"></i>
+                                            <span class="mdc-tab__text-label">Roll</span>
+                                        </span>
+                                        <span class="mdc-tab-indicator">
+                                            <span
+                                                class="mdc-tab-indicator__content mdc-tab-indicator__content--underline"></span>
+                                        </span>
+                                        <span class="mdc-tab__ripple"></span>
+                                    </button>
+                                    <button class="mdc-tab" role="tab" aria-selected="false" tabindex="2">
+                                        <span class="mdc-tab__content">
+                                            <i class="mdc-tab__icon fas fa-eye"></i>
+                                            <span class="mdc-tab__text-label">Oracle</span>
+                                        </span>
+                                        <span class="mdc-tab-indicator">
+                                            <span
+                                                class="mdc-tab-indicator__content mdc-tab-indicator__content--underline"></span>
+                                        </span>
+                                        <span class="mdc-tab__ripple"></span>
+                                    </button>
                                 </div>
                             </div>
-                            <label for="basic-switch">meta</label>
                         </div>
+                        <hr class="card-divider">
+                    </div>
 
-                        <div class="action-buttons mdc-chip-set">
-                            <div id="roll" class="mdc-menu-surface--anchor">
-                                <button class="mdc-chip" title="Dice Roll" data-mdc-auto-init="MDCRipple">
-                                    <i class="fas fa-dice-d20"></i>
+                    <!-- Story -->
+                    <div class="story-container">
+                        <div
+                            class="mdc-text-field text-field mdc-text-field--fullwidth mdc-text-field--no-label mdc-text-field--textarea">
+                            <textarea id="event-input" class="mdc-text-field__input"></textarea>
+                            <div class="mdc-notched-outline mdc-notched-outline--upgraded">
+                                <div class="mdc-notched-outline__leading"></div>
+                                <div class="mdc-notched-outline__trailing"></div>
+                            </div>
+                        </div>
+                        <div class="input">
+                            <div class="entry-buttons">
+                                <button id="submit-event" class="mdc-button mdc-button--raised"
+                                    data-mdc-auto-init="MDCRipple">
+                                    <span class="mdc-button__label">Submit</span>
+                                </button>
+                                <button id="cancel-event" class="mdc-button" data-mdc-auto-init="MDCRipple">
+                                    <span class="mdc-button__label">Cancel</span>
+                                </button>
+                                <button id="save-event" class="mdc-button mdc-button--raised"
+                                    data-mdc-auto-init="MDCRipple">
+                                    <span class="mdc-button__label">Save</span>
                                 </button>
                             </div>
-                            <div id="oracle" class="mdc-menu-surface--anchor">
-                                <button class="mdc-chip" title="Oracle" data-mdc-auto-init="MDCRipple">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <div class="mdc-menu mdc-menu-surface">
-                                    <ul class="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical"
-                                        tabindex="-1">
-                                        <li class="mdc-list-item" role="menuitem">
-                                            <span class="mdc-list-item__text">Some Oracle Table</span>
+
+                            <div class="mode-switch-container">
+                                <label for="basic-switch">fiction</label>
+                                <div id="mode-switch" class="mdc-switch">
+                                    <div class="mdc-switch__track"></div>
+                                    <div class="mdc-switch__thumb-underlay">
+                                        <div class="mdc-switch__thumb">
+                                            <input type="checkbox" id="basic-switch" class="mdc-switch__native-control"
+                                                role="switch">
+                                        </div>
+                                    </div>
+                                </div>
+                                <label for="basic-switch">meta</label>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Rolls -->
+                    <div class="roll-container">
+                        <div id="roll-source" class="mdc-select mdc-select--outlined" data-mdc-auto-init="MDCSelect">
+                            <input type="hidden" name="enhanced-select">
+                            <i class="mdc-select__dropdown-icon"></i>
+                            <div class="mdc-select__selected-text"></div>
+                            <div class="mdc-select__menu mdc-menu mdc-menu-surface js-resize-menu" data-select-id="roll-source">
+                                <ul id="roll-source-list" class="mdc-list">
+                                    <li class="mdc-list-item mdc-list-item--selected" data-value="actionDie">Action Die</li>
+                                    <li id="roll-source-template" class="mdc-list-item" data-value="">Template</li>
+                                </ul>
+                            </div>
+                            <div class="mdc-notched-outline">
+                                <div class="mdc-notched-outline__leading"></div>
+                                <div class="mdc-notched-outline__notch">
+                                    <label class="mdc-floating-label floating-label--float-above">Action Source</label>
+                                </div>
+                                <div class="mdc-notched-outline__trailing"></div>
+                            </div>
+                            <div class="mdc-line-ripple"></div>
+                        </div>
+
+                        <div class="add-container">
+                            <div id="roll-stats" class="mdc-select mdc-select--outlined" data-mdc-auto-init="MDCSelect">
+                                <input type="hidden" name="enhanced-select">
+                                <i class="mdc-select__dropdown-icon"></i>
+                                <div class="mdc-select__selected-text"></div>
+                                <div class="mdc-select__menu mdc-menu mdc-menu-surface js-resize-menu" data-select-id="roll-stats">
+                                    <ul class="mdc-list">
+                                        <li class="mdc-list-item mdc-list-item--selected" data-value=""
+                                            aria-selected="true"></li>
+                                        <li class="mdc-list-item" data-value="edge">
+                                            +Edge
+                                        </li>
+                                        <li class="mdc-list-item" data-value="heart">
+                                            +Heart
+                                        </li>
+                                        <li class="mdc-list-item" data-value="iron">
+                                            +Iron
+                                        </li>
+                                        <li class="mdc-list-item" data-value="shadow">
+                                            +Shadow
+                                        </li>
+                                        <li class="mdc-list-item" data-value="wits">
+                                            +Wits
+                                        </li>
+                                        <li class="mdc-list-item" data-value="health">
+                                            +Health
+                                        </li>
+                                        <li class="mdc-list-item" data-value="supply">
+                                            +Supply
+                                        </li>
+                                        <li class="mdc-list-item" data-value="spirit">
+                                            +Spirit
                                         </li>
                                     </ul>
                                 </div>
+                                <div class="mdc-notched-outline">
+                                    <div class="mdc-notched-outline__leading"></div>
+                                    <div class="mdc-notched-outline__notch">
+                                        <label class="mdc-floating-label">Stat Add</label>
+                                    </div>
+                                    <div class="mdc-notched-outline__trailing"></div>
+                                </div>
+                                <div class="mdc-line-ripple"></div>
+                            </div>
+
+                            <div class="mdc-text-field mdc-text-field--outlined"  data-mdc-auto-init="MDCTextField">
+                                <input id="roll-add" type="number" class="mdc-text-field__input">
+                                <div class="mdc-notched-outline">
+                                    <div class="mdc-notched-outline__leading"></div>
+                                    <div class="mdc-notched-outline__notch">
+                                        <label for="tf-outlined" class="mdc-floating-label">Additional Adds</label>
+                                    </div>
+                                    <div class="mdc-notched-outline__trailing"></div>
+                                </div>
                             </div>
                         </div>
+
+                        <div class="buttons">
+                            <button id="roll" class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
+                                <span class="mdc-button__label">Roll</span>
+                            </button>
+                            <button id="roll-reset" class="mdc-icon-button">
+                                <i class="fas fa-undo"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- oracles -->
+                    <div class="oracle-container">
+                        <ul class="mdc-list">
+                            <li id="oracle-template" class="mdc-list-item" tabindex="0">
+                                <span class="js-value mdc-list-item__text">First-line text</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>

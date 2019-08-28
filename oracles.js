@@ -101,7 +101,6 @@ const ORACLE = {
         99: "99",
         100: "100",
     },
-    "DIVIDER1": null,
     "Almost Certain": {
         10: "No",
         100: "Yes",
@@ -122,7 +121,6 @@ const ORACLE = {
         90: "No",
         100: "Yes",
     },
-    "DIVIDER2": null,
     "Endure Harm": {
         10: "The harm is mortal. Face Death.",
         20: "You are dying. You need to Heal within an hour or two, or Face Death.",
@@ -154,7 +152,6 @@ const ORACLE = {
         98: "A friend, companion, or ally is put in harm’s way (or you are, if alone).",
         100: "Roll twice more on this table. Both results occur. If they are the same result, make it worse.",
     },
-    "DIVIDER3": null,
     Action: {
         1: "Scheme",
         2: "Clash",

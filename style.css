@@ -235,12 +235,13 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    margin-left: 8px;
 }
 
 #event-history {
     overflow-y: scroll;
     height: 100%;
-    padding-left: 8px;
+    margin-bottom: 8px;
 }
 
 #event-pane .event-base {
@@ -284,15 +285,62 @@ body {
 }
 
 #entry {
-    min-height: 200px;
-    overflow-x: hidden;
-    overflow-y: hidden;
-    padding-left: 8px;
-    padding-bottom: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: 16px;
+    min-height: 275px;
 }
 
-#entry button {
-    margin: 8px 0px;
+.labeless-field {
+    padding-top: 4px;
+}
+
+#entry .entry-tab hr.card-divider { 
+    position: relative;
+    top: 0px;
+    border: 0.5px solid lightgray;
+    margin: 0px;   
+}
+
+#entry .story-container {
+    margin-top: 16px;
+}
+
+#entry .roll-container { 
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+#entry .roll-container {
+    margin-top: 16px;
+}
+#entry .roll-container .buttons {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+#entry .roll-container .add-container {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#entry .oracle-container {
+    max-height: 200px;
+    width: 100%;
+    overflow-y: scroll;
+}
+#entry .oracle-container .mdc-list {
+    width: 100%;
+    padding-right: 8px;
+}
+#entry .oracle-container .mdc-list-item {
+    padding: 0px;
+    padding-left: 8px;
+    height: 32px; 
 }
 
 #event-input {
@@ -313,6 +361,7 @@ body {
 }
 
 #entry .input {
+    margin: 8px 0px;
     display: flex;
     flex-direction: row;
     align-items: center;
