@@ -724,6 +724,7 @@ function importSession() {
         reader.readAsText(file);
         reader.addEventListener("load", () => {
            loadSession(reader.result); 
+           saveSession();
         });
     });
 }
