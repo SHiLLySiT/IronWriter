@@ -586,7 +586,6 @@ let bondCard = undefined;
 let bondTemplate = undefined;
 let characterName = undefined;
 let modeSwitch = undefined;
-let rollSourceTemplate = undefined;
 
 let isControlPressed = false;
 let bondProgressTrack = undefined;
@@ -626,9 +625,6 @@ function handleInit() {
 
         // dropdown sizes reset when hidden via tab switching
         resizeDropdowns();
-
-        let select = document.getElementById("roll-source").MDCSelect;
-        select.foundation_.adapter_.setSelectedIndex(select.selectedIndex);
     });
 
     window.addEventListener("keydown", handleKeyDown);
@@ -686,13 +682,17 @@ function handleInit() {
     initRoll();
     initOracle();
 
-    let str = localStorage.getItem("session");
-    if (str === undefined || str === null) {
-        newSession();
-        refresh();
-    } else {
-        loadSession(str);
-    }
+    window.requestAnimationFrame(() => {
+        let str = localStorage.getItem("session");
+        if (str === undefined || str === null) {
+            newSession();
+            refresh();
+        } else {
+            loadSession(str);
+        }
+
+        document.getElementById("page-container").style.display = "flex";
+    });    
 }
 
 function newSession() {
@@ -767,8 +767,6 @@ function loadSession(str) {
 }
 
 function initRoll() {
-    rollSourceTemplate = document.getElementById("roll-source-template");
-
     let rollSource = document.getElementById("roll-source");
     let rollStats = document.getElementById("roll-stats");
     let rollAdd = document.getElementById("roll-add");
@@ -1138,24 +1136,23 @@ function refresh() {
     // progress sources
     let sourceList = document.getElementById("roll-source-list");
     let sources = sourceList.querySelectorAll("li");
-    for (let i = 0; i < sources.length; i++) {
+    for (let i = 1; i < sources.length; i++) {
         sources[i].remove();
     }
-    let e = rollSourceTemplate.cloneNode(true);
-    e.textContent = "Action Die";
-    e.dataset.value = "actionDie";
-    e.classList.add("mdc-list-item--selected");
-    sourceList.appendChild(e);
     for (let p in session.state.progress) {
         if (session.state.progress[p] === undefined) {
             continue;
         }
-        let e = rollSourceTemplate.cloneNode(true);
+
+        let e = document.createElement("li");
+        e.classList.add("mdc-list-item")
+        e.classList.add("mdc-list-item--selected");
         e.textContent = session.state.progress[p].name;
         e.dataset.value = p;
         sourceList.appendChild(e);
     }
-    
+    let select = document.getElementById("roll-source");
+    select.MDCSelect.selectedIndex = 0;
 
     // debilities
     debilityElements.none.style.display = "";
