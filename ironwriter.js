@@ -107,11 +107,17 @@ class GameState {
     constructor() {
         this.characterName = "";
 
+        /**
+         * @type {Object.<string, Number>}
+         */
         this.stats = {};
         for (let p in STATS) {
             this.stats[p] = 0;
         }
 
+        /**
+         * @type {Object.<string, Boolean>}
+         */
         this.debilities = {};
         for (let p in DEBILITIES) {
             this.debilities[p] = false;
@@ -205,11 +211,17 @@ class Action {
 }
 
 class StatAction extends Action {
-    
-    constructor(stats) {
+    /**
+     * @param {String} stat
+     * @param {String} modifier
+     * @param {Number} value
+     */
+    constructor(statId, modifier, value) {
         super();
         this.type = "StatAction";
-        this.stats = stats;
+        this.statId = statId;
+        this.modifier = modifier;
+        this.value = value;
     }
 
    /**
@@ -217,15 +229,14 @@ class StatAction extends Action {
      * @param {Moment} moment
      */
     applyAction(gameState, moment) {
-        for (let p in this.stats) {
-            if (this.stats[p].modifier == "+") {
-                gameState.stats[p] += this.stats[p].value;
-            } else if (this.stats[p].modifier == "-") {
-                gameState.stats[p] -= this.stats[p].value;
-            } else {
-                gameState.stats[p] = this.stats[p].value;
-            }
+        if (this.modifier == "+") {
+            gameState.stats[this.statId] += this.value;
+        } else if (this.modifier == "-") {
+            gameState.stats[this.statId] -= this.value;
+        } else {
+            gameState.stats[this.statId] = this.value;
         }
+        
         if (gameState.stats.momentumReset < 0) {
             gameState.stats.momentumReset = 0;
         }
@@ -236,9 +247,7 @@ class StatAction extends Action {
      * @param {Moment} moment
      */
     unapplyAction(gameState, moment) {
-        for (let p in this.stats) {
-            gameState.stats[p] = moment.state.stats[p];
-        }
+        gameState.stats[this.statId] = moment.state.stats[this.statId];
     }
 }
 
@@ -682,24 +691,16 @@ function handleInit() {
 
 function newSession() {
     session = new Session();
-        
-    let debilities = {};
-    for (let p in DEBILITIES) {
-        debilities[p] = false;
-    }
-
-    let stats = {
-        momentum: { modifier: "=", value: 2 },
-        momentumReset: { modifier: "=", value: 2 },
-        momentumMax: { modifier: "=", value: 10 },
-        health: { modifier: "=", value: 5 },
-        supply: { modifier: "=", value: 5 },
-        spirit: { modifier: "=", value: 5 },
-    };
-
+    
     let initialMoment = new Moment("", EventType.None);
     initialMoment.addAction(new CharacterNameAction("New Character"));
-    initialMoment.addAction(new StatAction(stats));
+    initialMoment.addAction(new StatAction("momentum", "=", 2));
+    initialMoment.addAction(new StatAction("momentumReset", "=", 2));
+    initialMoment.addAction(new StatAction("momentumMax", "=", 10));
+    initialMoment.addAction(new StatAction("health", "=", 5));
+    initialMoment.addAction(new StatAction("supply", "=", 5));
+    initialMoment.addAction(new StatAction("spirit", "=", 5));
+    initialMoment.addAction(new StatAction("spirit", "=", 5));
     session.addMoment(initialMoment);
 
     saveSession();
@@ -1305,17 +1306,11 @@ function changeStat(args) {
     }
 
     let statName = args[0];
-    let stats = {};
-    
+    let value = Math.abs(args[1]);
     let modifier = "=";
     if (args[1][0] == "+" || args[1][0] == "-") {
         modifier = args[1][0];
     }
 
-    stats[statName] = {
-        modifier: modifier,
-        value: Math.abs(args[1]),
-    }
-
-    return new StatAction(stats);
+    return new StatAction(statName, modifier, value);
 }
