@@ -692,6 +692,12 @@ function handleInit() {
         }
 
         document.getElementById("page-container").style.display = "flex";
+
+        let events = eventHistory.querySelectorAll("#event-history .event-base");
+        if (events.length > 0) {
+            let lastEvent = events[events.length - 1];
+            lastEvent.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+        }
     });    
 }
 
