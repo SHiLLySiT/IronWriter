@@ -127,7 +127,20 @@ class GameState {
          * @type {Object.<string, Progress>}
          */
         this.progress = {};
+
+        /**
+         * @type {Object.<string, Bond>}
+         */
         this.bonds = {};
+    }
+}
+
+class Bond {
+    /**
+     * @param {string} name
+     */
+    constructor(name) {
+        this.name = name;
     }
 }
 
@@ -383,10 +396,15 @@ class ProgressAction extends Action {
 }
 
 class BondAction extends Action {
-    constructor(bonds) {
+    /**
+     * @param {string} bondId
+     */
+    constructor(bondId) {
         super();
         this.type = "BondAction";
-        this.bonds = bonds;
+        this.bondId = bondId;
+        this.action = "";
+        this.bondName = "";
     }
 
     /**
@@ -394,19 +412,15 @@ class BondAction extends Action {
      * @param {Moment} moment
      */
     applyAction(gameState, moment) {
-        for (let p in this.bonds) {
-            let action = this.bonds[p].action;
-            let value = this.bonds[p].value;
-            if (action == "add") {
-                if (gameState.bonds[p] === undefined) {
-                    gameState.bonds[p] = value;
-                    gameState.stats.bonds++;
-                }
-            } else if (action == "remove") {
-                if (gameState.bonds[p] !== undefined) {
-                    delete gameState.bonds[p];
-                    gameState.stats.bonds--;
-                }
+        if (this.action == "add") {
+            if (gameState.bonds[this.bondId] === undefined) {
+                gameState.bonds[this.bondId] = new Bond(this.bondName);
+                gameState.stats.bonds++;
+            }
+        } else if (this.action == "remove") {
+            if (gameState.bonds[this.bondId] !== undefined) {
+                delete gameState.bonds[this.bondId];
+                gameState.stats.bonds--;
             }
         }
     }
@@ -416,19 +430,15 @@ class BondAction extends Action {
      * @param {Moment} moment
      */
     unapplyAction(gameState, moment) {
-        for (let p in this.bonds) {
-            let action = this.bonds[p].action;
-            let value = this.bonds[p].value;
-            if (action == "add") {
-                if (moment.state.bonds[p] === undefined) {
-                    delete gameState.bonds[p];
-                    gameState.stats.bonds--;
-                }
-            } else if (action == "remove") {
-                if (moment.state.bonds[p] !== undefined) {
-                    gameState.bonds[p] = value;
-                    gameState.stats.bonds++;
-                }
+        if (this.action == "add") {
+            if (moment.state.bonds[this.bondId] === undefined) {
+                delete gameState.bonds[this.bondId];
+                gameState.stats.bonds--;
+            }
+        } else if (this.action == "remove") {
+            if (moment.state.bonds[this.bondId] !== undefined) {
+                gameState.bonds[this.bondId] = moment.state.bonds[this.bondId];
+                gameState.stats.bonds++;
             }
         }
     }
@@ -1101,7 +1111,7 @@ function refresh() {
     }
     for (let p in session.state.bonds) {
         let bond = bondTemplate.cloneNode(true);
-        bond.querySelector(".content").textContent = session.state.bonds[p];
+        bond.querySelector(".content").textContent = session.state.bonds[p].name;
         bondList.appendChild(bond);
     }
 
@@ -1277,12 +1287,9 @@ function removeBond(args) {
     }
 
     let id = args[1].toLowerCase();
-    let bonds = {};
-    bonds[id] = {
-        action: "remove",
-        value: args[1]
-    }
-    return new BondAction(bonds);
+    let bond = new BondAction(id);
+    bond.action = "remove";
+    return bond;
 }
 
 function addBond(args) {
@@ -1291,12 +1298,10 @@ function addBond(args) {
     }
 
     let id = args[1].toLowerCase();
-    let bonds = {};
-    bonds[id] = {
-        action: "add",
-        value: args[1]
-    }
-    return new BondAction(bonds);
+    let bond = new BondAction(id);
+    bond.action = "add";
+    bond.bondName = args[1];
+    return bond;
 }
 
 function changeStat(args) {
