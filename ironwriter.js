@@ -446,14 +446,12 @@ class BondAction extends Action {
 
 class OracleAction extends Action {
     /**
-     * @param {string} type
+     * @param {string} oracleType
      */
-    constructor(type) {
+    constructor(oracleType) {
         super();
         this.type = "OracleAction";
-        this.oracle = {
-            type: type
-        };
+        this.oracleType = oracleType;
     }
 
    /**
@@ -993,7 +991,7 @@ function handleRerollEvent(eventElement) {
         action.reroll();
         action.applyAction(session.state, moment);
     } else if (action instanceof OracleAction) {
-        moment.input = doOracleRoll(action.oracle.type);
+        moment.input = doOracleRoll(action.oracleType);
     } else {
         console.log("Unable to reroll " + typeof(action));
     }
