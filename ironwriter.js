@@ -117,8 +117,24 @@ class GameState {
             this.debilities[p] = false;
         }
 
+        /**
+         * @type {Object.<string, Progress>}
+         */
         this.progress = {};
         this.bonds = {};
+    }
+}
+
+class Progress {
+    /**
+     * @param {String} name
+     * @param {String} rank
+     * @param {Number} value
+     */
+    constructor(name, rank, value) {
+        this.name = name;
+        this.rank = rank;
+        this.value = value;
     }
 }
 
@@ -282,10 +298,14 @@ class DebilityAction extends Action {
 }
 
 class ProgressAction extends Action {
-    constructor(progress) {
+    constructor(progressId) {
         super();
         this.type = "ProgressAction";
-        this.progress = progress;
+        this.progressId = progressId;
+        this.rank = "";
+        this.action = "";
+        this.modifier = "";
+        this.value = 0;
     }
 
     /**
@@ -293,36 +313,34 @@ class ProgressAction extends Action {
      * @param {Moment} moment
      */
     applyAction(gameState, moment) {
-        for (let p in this.progress) {
-            if (this.progress[p].action == "add") {
-                if (gameState.progress[p] !== undefined) {
-                    continue;
-                }
+        if (this.action == "add") {
+            if (gameState.progress[this.progressId] !== undefined) {
+                return;
+            }
 
-                gameState.progress[p] = {
-                    rank: this.progress[p].rank,
-                    name: this.progress[p].name,
-                    value: 0,
-                };
-            } else {
-                if (gameState.progress[p] === undefined) {
-                    continue;
-                }
+            gameState.progress[this.progressId] = new Progress(
+                this.progressId,
+                this.rank,
+                0,
+            );
+        } else {
+            if (gameState.progress[this.progressId] === undefined) {
+                return;
+            }
 
-                if (this.progress[p].action == "complete") {
-                    delete gameState.progress[p];
-                } else if (this.progress[p].action == "progress") {
-                    let state = gameState.progress[p];
-                    state.value = state.value + CHALLENGE_RANKS[state.rank];
-                } else if (this.progress[p].action == "tick") {
-                    let state = gameState.progress[p];
-                    if (this.progress[p].modifier == "+") {
-                        state.value += this.progress[p].value;
-                    } else if (this.progress[p].modifier == "-") {
-                        state.value -= this.progress[p].value;
-                    } else {
-                        state.value = this.progress[p].value;
-                    }
+            if (this.action == "complete") {
+                delete gameState.progress[this.progressId];
+            } else if (this.action == "progress") {
+                let state = gameState.progress[this.progressId];
+                state.value = state.value + CHALLENGE_RANKS[state.rank];
+            } else if (this.action == "tick") {
+                let state = gameState.progress[this.progressId];
+                if (this.modifier == "+") {
+                    state.value += this.value;
+                } else if (this.modifier == "-") {
+                    state.value -= this.value;
+                } else {
+                    state.value = this.value;
                 }
             }
         }
@@ -333,23 +351,21 @@ class ProgressAction extends Action {
      * @param {Moment} moment
      */
     unapplyAction(gameState, moment) {
-        for (let p in this.progress) {
-            if (this.progress[p].action == "add") {
-                gameState.progress[p] = moment.state.progress[p];
-            } else if (this.progress[p].action == "complete") {
-                gameState.progress[p] = moment.state.progress[p];
-            } else {
-                if (gameState.progress[p] === undefined) {
-                    continue;
-                }
+        if (this.action == "add") {
+            gameState.progress[this.progressId] = moment.state.progress[this.progressId];
+        } else if (this.action == "complete") {
+            gameState.progress[this.progressId] = moment.state.progress[this.progressId];
+        } else {
+            if (gameState.progress[this.progressId] === undefined) {
+                return;
+            }
 
-                else if (this.progress[p].action == "progress") {
-                    let state = gameState.progress[p];
-                    state.value = state.value - CHALLENGE_RANKS[state.rank];
-                } else if (this.progress[p].action == "tick") {
-                    let state = gameState.progress[p];
-                    state.value = state.value - this.progress[p].value;
-                }
+            if (this.action == "progress") {
+                let state = gameState.progress[this.progressId];
+                state.value = state.value - CHALLENGE_RANKS[state.rank];
+            } else if (this.action == "tick") {
+                let state = gameState.progress[this.progressId];
+                state.value = moment.state.progress[this.progressId].value;
             }
         }
     }
@@ -1230,39 +1246,29 @@ function progress(args) {
 
     let id = args[1].toLowerCase();
     let option = (args[2] === undefined) ? undefined : args[2].toLowerCase();
-    let progress = {};
+    let progress = new ProgressAction(id);
 
     if (option === undefined) {
         // mark progress
-        progress[id] = {
-            action: "progress",
-        };
+        progress.action = "progress";
     } else if (!isNaN(option)) {
         // mark progress with param
-        let modifier = "=";
+        progress.modifier = "=";
         if (option[0] == "+" || option[0] == "-") {
-            modifier = option[0];
+            progress.modifier = option[0];
         }
-        progress[id] = {
-            action: "tick",
-            modifier: modifier,
-            value: Math.abs(option),
-        };
+        progress.action = "tick";
+        progress.value = Math.abs(option);
     } else if (option == "complete") {
         // flag as complete
-        progress[id] = {
-            action: "complete",
-        };
+        progress.action = "complete";
     } else {
         // start new progress
-        progress[id] = {
-            action: "add",
-            name: args[1],
-            rank: option,
-        };
+        progress.action = "add";
+        progress.rank = option;
     }
 
-    return new ProgressAction(progress);
+    return progress;
 }
 
 function removeBond(args) {
