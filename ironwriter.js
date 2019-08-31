@@ -783,11 +783,6 @@ function initStats() {
             delete statElements[p];
             continue;
         }
-
-        let rollButton = container.querySelector("button");
-        if (rollButton !== null) {
-            rollButton.addEventListener("click", () => handleStatRollClick(p));
-        }
         statElements[p] = container.querySelector(".stat-value");
     }
 }
@@ -843,9 +838,6 @@ function createProgressTrack(name, rank, roll) {
     let newTrack = progressTrackTemplate.cloneNode(true);
     newTrack.querySelector(".name").textContent = name;
     newTrack.querySelector(".rank").textContent = rank;
-    let button = newTrack.querySelector("button");
-    button.style.display = (roll) ? "block" : "none";
-    button.addEventListener("click", () => handleProgressRollClick(name));
     return newTrack;
 }
 
