@@ -864,8 +864,11 @@ function initBonds() {
 
 function createProgressTrack(name, rank, roll) {
     let newTrack = progressTrackTemplate.cloneNode(true);
-    newTrack.querySelector(".name").textContent = name;
-    newTrack.querySelector(".rank").textContent = rank;
+    if (name == null && rank == null) {
+        newTrack.querySelector(".meta").remove();
+    } else {
+        newTrack.querySelector(".name").textContent = name + " (" + rank + ")";
+    }
     return newTrack;
 }
 
@@ -1114,7 +1117,7 @@ function refresh() {
     updateProgressTrack(bondProgressTrack, session.state.stats.bonds);
 
     let bondList = bondCard.querySelector(".bond-list");
-    let bonds = bondList.querySelectorAll("li");
+    let bonds = bondList.querySelectorAll("div");
     for (let i = 0; i < bonds.length; i++) {
         bonds[i].remove();
     }
@@ -1126,15 +1129,22 @@ function refresh() {
 
     // progress cards
     let progressList = progressCard.querySelector(".tracks");
-    let progress = progressList.querySelectorAll(".progress-track");
-    for (let i = 0; i < progress.length; i++) {
-        progress[i].remove();
+    while (progressList.children.length > 0) {
+        let last = progressList.children.length - 1;
+        progressList.children[last].remove();
     }
     for (let p in session.state.progress) {
         let state = session.state.progress[p];
         if (session.state.progress[p] == undefined) {
             continue;
         }
+
+        if (progressList.children.length > 0) {
+            let divider = document.createElement("hr");
+            divider.classList.add("card-divider");
+            progressList.appendChild(divider);
+        }
+
         let track = createProgressTrack(state.name, state.rank, true);
         updateProgressTrack(track, state.value);
         progressList.appendChild(track);

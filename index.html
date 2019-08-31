@@ -60,7 +60,10 @@
                 <div class="mdc-card">
                     <h3>Character</h3>
 
-                    <div id="character-name" class="status-group">John Doe</div>
+                    <div class="status-group">
+                        <div>Name</div>
+                        <div id="character-name" class="status-group">John Doe</div>
+                    </div>
 
                     <div id="experience" class="experience-container status-group">
                         <div>Experience</div>
@@ -72,6 +75,8 @@
                             </div>
                         </div>
                     </div>
+
+                    <hr class="card-divider">
 
                     <div class="stat-container status-group">
                         <div>Stats</div>
@@ -156,6 +161,8 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <hr class="card-divider">
 
                     <div class="debility-container status-group">
                         <div>Debilities</div>
@@ -196,9 +203,8 @@
                     <h3>Bonds</h3>
                     <div class="track-container">
                         <div id="progress-track-template" class="progress-track">
-                            <div>
-                                <p class="name">Avenge my father's death</p>
-                                <p class="rank">Dangerous</p>
+                            <div class="meta">
+                                <div class="name">Avenge my father's death</div>
                             </div>
                             <div class="wrapper">
                                 <div class="box">
@@ -212,13 +218,14 @@
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
+
                     <ul class="bond-list mdc-list">
-                        <li id="bond-template" class="mdc-list-item">
-                            <span class="content mdc-list-item__text">Lorem ipsum dolor</span>
-                        </li>
+                        <div id="bond-template">
+                            <i class="fas fa-link"></i>
+                            <span class="content">Lorem ipsum dolor</span>
+                        </div>
                     </ul>
                 </div>
 
