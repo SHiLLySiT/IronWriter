@@ -624,13 +624,8 @@ function handleInit() {
             oracleContainer.style.display = "flex";
         }
 
-        // update dropdown menu widths
-        let menus = document.querySelectorAll(".js-resize-menu");
-        for (let i = 0; i < menus.length; i++) {
-            let id = menus[i].dataset.selectId;
-            let width = document.getElementById(id).offsetWidth;
-            menus[i].style.width = width + "px";
-        }
+        // dropdown sizes reset when hidden via tab switching
+        resizeDropdowns();
 
         let select = document.getElementById("roll-source").MDCSelect;
         select.foundation_.adapter_.setSelectedIndex(select.selectedIndex);
@@ -638,6 +633,7 @@ function handleInit() {
 
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("resize", resizeDropdowns);
 
     entryInput = document.getElementById("event-input");
 
@@ -876,6 +872,16 @@ function updateProgressTrack(track, value) {
         } else {
             ticks[i].style.display = "none";
         }
+    }
+}
+
+function resizeDropdowns() {
+    // update dropdown menu widths
+    let menus = document.querySelectorAll(".js-resize-menu");
+    for (let i = 0; i < menus.length; i++) {
+        let id = menus[i].dataset.selectId;
+        let width = document.getElementById(id).offsetWidth;
+        menus[i].style.width = width + "px";
     }
 }
 
