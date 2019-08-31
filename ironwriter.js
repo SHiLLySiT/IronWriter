@@ -279,10 +279,15 @@ class CharacterNameAction extends Action {
 }
 
 class DebilityAction extends Action {
-    constructor(debilities) {
+    /**
+     * @param {string} debilityId
+     * @param {Boolean} value
+     */
+    constructor(debilityId, value) {
         super();
         this.type = "DebilityAction";
-        this.debilities = debilities;
+        this.debilityId = debilityId;
+        this.value = value;
     }
 
     /**
@@ -290,9 +295,7 @@ class DebilityAction extends Action {
      * @param {Moment} moment
      */
     applyAction(gameState, moment) {
-        for (let p in this.debilities) {
-            gameState.debilities[p] = this.debilities[p];
-        }
+        gameState.debilities[this.debilityId] = this.value;
     }
 
     /**
@@ -300,9 +303,7 @@ class DebilityAction extends Action {
      * @param {Moment} moment
      */
     unapplyAction(gameState, moment) {
-        for (let p in this.debilities) {
-            gameState.debilities[p] = moment.state.debilities[p];
-        }
+        gameState.debilities[this.debilityId] = moment.state.debilities[this.debilityId];
     }
 }
 
@@ -1220,9 +1221,7 @@ function removeDebility(args) {
         return;
     }
 
-    let debilities = {};
-    debilities[debilityName] = false;
-    return new DebilityAction(debilities);
+    return new DebilityAction(debilityName, false);
 }
 
 function addDebility(args) {
@@ -1235,9 +1234,7 @@ function addDebility(args) {
         return;
     }
 
-    let debilities = {};
-    debilities[debilityName] = true;
-    return new DebilityAction(debilities);
+    return new DebilityAction(debilityName, true);
 }
 
 function progress(args) {
