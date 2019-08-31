@@ -312,6 +312,7 @@ class ProgressAction extends Action {
         super();
         this.type = "ProgressAction";
         this.progressId = progressId;
+        this.progressName = "";
         this.rank = "";
         this.action = "";
         this.modifier = "";
@@ -329,7 +330,7 @@ class ProgressAction extends Action {
             }
 
             gameState.progress[this.progressId] = new Progress(
-                this.progressId,
+                this.progressName,
                 this.rank,
                 0,
             );
@@ -1264,6 +1265,7 @@ function progress(args) {
         // start new progress
         progress.action = "add";
         progress.rank = option;
+        progress.progressName = args[1];
     }
 
     return progress;
