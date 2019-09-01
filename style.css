@@ -91,7 +91,7 @@ body {
 
 /* Character sheet style */
 #character-pane {
-    min-width: 375px;
+    min-width: 355px;
     height: 100%;
     overflow-y: scroll;
 }
@@ -354,7 +354,6 @@ body {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    
 }
 
 #entry .input {
