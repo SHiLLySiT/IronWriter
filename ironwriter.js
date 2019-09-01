@@ -686,6 +686,7 @@ let characterName = undefined;
 let modeSwitch = undefined;
 let assetCard = undefined;
 let assetTemplate = undefined;
+let confirmDialog = undefined;
 
 let isControlPressed = false;
 let bondProgressTrack = undefined;
@@ -735,6 +736,8 @@ function handleInit() {
     window.addEventListener("keyup", handleKeyUp);
     window.addEventListener("resize", resizeDropdowns);
 
+    confirmDialog = document.getElementById("confirm-dialog").MDCDialog;
+
     entryInput = document.getElementById("event-input");
 
     eventHistory = document.getElementById("event-history");
@@ -756,7 +759,15 @@ function handleInit() {
     });
 
     document.getElementById("new").addEventListener("click", () => {
-        newSession();
+        let handler = (action) => { 
+            confirmDialog.root_.removeEventListener("MDCDialog:closed", handler);
+            if (action.detail.action == "accept") {
+                newSession();
+            }
+        };
+        confirmDialog.root_.addEventListener("MDCDialog:closed", handler);
+        confirmDialog.content_.textContent = "Are you sure you want to start a new session? Your current session will be deleted.";
+        confirmDialog.open();
     });
 
     document.getElementById("help").addEventListener("click", () => {
@@ -1217,19 +1228,28 @@ function handleSaveEditEvent() {
 }
 
 function handleDeleteEvent(eventElement) {
-    session.gotoMoment(eventElement.dataset.index - 1);
-    session.removeMoment(eventElement.dataset.index);
-    session.gotoPresentMoment();
+    let handler = (action) => { 
+        confirmDialog.root_.removeEventListener("MDCDialog:closed", handler);
+        if (action.detail.action != "accept") {
+            return;
+        }
+        session.gotoMoment(eventElement.dataset.index - 1);
+        session.removeMoment(eventElement.dataset.index);
+        session.gotoPresentMoment();
 
-    eventElement.remove();
-    let eventElements = eventHistory.querySelectorAll(".event-base");
-    for (let i = eventElement.dataset.index - 1; i < eventElements.length; i++) {
-        let child = eventElements[i];
-        child.dataset.index = i + 1;
-    }
+        eventElement.remove();
+        let eventElements = eventHistory.querySelectorAll(".event-base");
+        for (let i = eventElement.dataset.index - 1; i < eventElements.length; i++) {
+            let child = eventElements[i];
+            child.dataset.index = i + 1;
+        }
 
-    saveSession();
-    refresh();
+        saveSession();
+        refresh();
+    };
+    confirmDialog.root_.addEventListener("MDCDialog:closed", handler);
+    confirmDialog.content_.textContent = "Are you sure you want to delete this event?";
+    confirmDialog.open();
 }
 
 function clearEventHistory() {
