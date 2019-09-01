@@ -27,6 +27,7 @@ __IMPORTANT NOTE__: IronWriter is currently in active development and should be 
         * [Adding and Removing Debilities](#Adding-and-Removing-Debilities)
         * [Marking Progress](#Marking-Progress)
         * [Making Bonds](#Making-Bonds)
+        * [Managing Assets](#Managing-Assets)
 
 # Quick start
 * Visit www.alexlarioza.com/IronWriter or clone this repo and open [index.html](index.html) in your browser.
@@ -39,6 +40,7 @@ __IMPORTANT NOTE__: IronWriter is currently in active development and should be 
 
 # Documentation
 IronWriter represents moments or blocks of content in your stories as "events". How much content you choose to write into each card is up to you.
+
 ![alt text](/docs/images/events.gif)
 
 There are two types of events - "fiction" and "meta". Functionally there is nothing different about them, but they are visually distinct to help separate your fictional elements from your meta actions during your session such as moves, question prompts, etc.
