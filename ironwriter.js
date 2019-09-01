@@ -839,16 +839,16 @@ function newSession() {
 function importSession() {
     let linkElement = document.createElement("input");
     linkElement.setAttribute("type", "file");
-    linkElement.click();
     linkElement.addEventListener("change", () => {
         let file = event.target.files[0];
         var reader = new FileReader();
-        reader.readAsText(file);
         reader.addEventListener("load", () => {
-           loadSession(reader.result); 
-           saveSession();
+            loadSession(reader.result); 
+            saveSession();
         });
+        reader.readAsText(file);
     });
+    linkElement.click();
 }
 
 function exportSession() {
