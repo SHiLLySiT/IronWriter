@@ -241,6 +241,25 @@ body {
     margin-bottom: 16px;
 }
 
+/* Assets */
+#asset-card .asset-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+#asset-card .asset-container .upgrades {
+    display: flex;
+    flex-direction: column;
+    margin-right: 8px;
+    font-size: 0.5em;
+}
+#asset-card .asset-container .upgrades > div {
+    padding-bottom: 2px;
+}
+#asset-card .asset-container .properties {
+    font-size: 0.75em;
+}
+
 /* Event Log Style */
 #event-pane {
     width: 100%;

@@ -132,6 +132,32 @@ class GameState {
          * @type {Object.<string, Bond>}
          */
         this.bonds = {};
+
+        /**
+         * @type {Object.<string, Asset>}
+         */
+        this.assets = {};
+    }
+}
+
+class Asset {
+    /**
+     * @param {string} name
+     */
+    constructor(name) {
+        this.name = name;
+        /**
+         * @type {Object.<string, AssetProperty>}
+         */
+        this.properties = {};
+        this.upgrades = [false, false, false];
+    }
+}
+
+class AssetProperty {
+    constructor() {
+        this.name = "";
+        this.value = undefined;
     }
 }
 
@@ -220,6 +246,74 @@ class Action {
      * @param {Moment} moment
      */
     unapplyAction(gameState, moment) {
+    }
+}
+
+class AssetAction extends Action {
+    /**
+     * @param {string} assetId
+     */
+    constructor(assetId) {
+        super();
+        this.type = "AssetAction";
+        this.assetId = assetId;
+        this.action = "";
+        this.assetName = "";
+        this.upgradeIndex = -1;
+        this.propertyId = "";
+        this.propertyName = "";
+        this.propertyValue = undefined;
+        this.propertyModifier = "";
+    }
+
+   /**
+     * @param {GameState} gameState
+     * @param {Moment} moment
+     */
+    applyAction(gameState, moment) {
+        if (this.action == "add") {
+            gameState.assets[this.assetId] = new Asset(this.assetName);
+        } else if (this.action == "remove") {
+            delete gameState.assets[this.assetId];
+        } else if (this.action == "update") {
+            if (gameState.assets[this.assetId] === undefined) {
+                return;
+            }
+
+            let prop = gameState.assets[this.assetId].properties[this.propertyId];
+            if (prop === undefined) {
+                let prop = new AssetProperty();
+                prop.name = this.propertyName;
+                prop.value = this.propertyValue;
+                gameState.assets[this.assetId].properties[this.propertyId] = prop;
+            } else {
+                if (isNaN(prop.value)) {
+                    prop.value = this.propertyValue;
+                } else {
+                    if (this.propertyModifier == "+") {
+                        prop.value += this.propertyValue;
+                    } else if (this.propertyModifier == "-") {
+                        prop.value -= this.propertyValue;
+                    } else {
+                        prop.value = this.propertyValue;
+                    }
+                }
+            }
+        } else if (this.action == "upgrade") {
+            if (gameState.assets[this.assetId] === undefined) {
+                return;
+            }
+
+            gameState.assets[this.assetId].upgrades[this.upgradeIndex] = true;
+        }
+    }
+
+    /**
+     * @param {GameState} gameState
+     * @param {Moment} moment
+     */
+    unapplyAction(gameState, moment) {
+        gameState.assets[this.assetId] = moment.state.assets[this.assetId];
     }
 }
 
@@ -561,6 +655,7 @@ const ACTION_TYPES = {
     "BondAction": BondAction,
     "OracleAction": OracleAction,
     "RollAction": RollAction,
+    "AssetAction": AssetAction,
 }
 
 let statElements = {};
@@ -589,6 +684,8 @@ let bondCard = undefined;
 let bondTemplate = undefined;
 let characterName = undefined;
 let modeSwitch = undefined;
+let assetCard = undefined;
+let assetTemplate = undefined;
 
 let isControlPressed = false;
 let bondProgressTrack = undefined;
@@ -688,6 +785,7 @@ function handleInit() {
     initBonds();
     initRoll();
     initOracle();
+    initAssets();
 
     window.requestAnimationFrame(() => {
         let str = localStorage.getItem("session");
@@ -780,6 +878,12 @@ function loadSession(str) {
     refresh();
 }
 
+function initAssets() {
+    assetCard = document.getElementById("asset-card");
+    assetTemplate = document.getElementById("asset-template");
+    assetTemplate.remove();
+}
+
 function initRoll() {
     let rollSource = document.getElementById("roll-source");
     let rollStats = document.getElementById("roll-stats");
@@ -867,6 +971,41 @@ function initBonds() {
 
     bondTemplate = document.getElementById("bond-template");
     bondTemplate.remove();
+}
+
+/**
+ * @param {Asset} asset
+ */
+function createAsset(asset) {
+    let newAsset = assetTemplate.cloneNode(true);
+
+    newAsset.querySelector(".name").textContent = asset.name;
+
+    let upgrades = newAsset.querySelector(".upgrades");
+    for (let i = 0; i < upgrades.children.length; i++) {
+        let empty = upgrades.children[i].querySelector(".empty");
+        let filled = upgrades.children[i].querySelector(".filled");
+        if (asset.upgrades[i]) {
+            empty.style.display = "none";
+            filled.style.display = "block";
+        } else {
+            empty.style.display = "block";
+            filled.style.display = "none";
+        }
+    }
+
+    let properties = newAsset.querySelector(".properties");
+    for (let p in asset.properties) {
+        if (asset.properties[p] === undefined) {
+            continue;
+        }
+
+        let e = document.createElement("div");
+        e.textContent = asset.properties[p].name + ": " + asset.properties[p].value;
+        properties.appendChild(e);
+    }
+
+    return newAsset;
 }
 
 function createProgressTrack(name, rank, roll) {
@@ -1199,6 +1338,28 @@ function refresh() {
 
     // name
     characterName.textContent = session.state.characterName;
+
+    // assets
+    let assetList = assetCard.querySelector(".assets");
+    while (assetList.children.length > 0) {
+        let last = assetList.children.length - 1;
+        assetList.children[last].remove();
+    }
+    for (let p in session.state.assets) {
+        let state = session.state.assets[p];
+        if (session.state.assets[p] == undefined) {
+            continue;
+        }
+
+        if (assetList.children.length > 0) {
+            let divider = document.createElement("hr");
+            divider.classList.add("card-divider");
+            assetList.appendChild(divider);
+        }
+
+        let asset = createAsset(state);
+        assetList.appendChild(asset);
+    }
 }
 
 function createMoment(input, type) {
@@ -1220,22 +1381,20 @@ function createMoment(input, type) {
                 moment.addAction(addBond(args));
             } else if (args[0] == "unbond") {
                 moment.addAction(removeBond(args));
+            } else if (args[0] == "asset") {
+                moment.addAction(updateAsset(args));
             } else if (args[0] == "progress") {
                 moment.addAction(progress(args));
             } else if (args[0] == "rename") {
                 moment.addAction(renameCharacter(args));
             } else if (args[0] == "is") {
                 moment.addAction(addDebility(args));
-                moment.addAction(new StatAction({
-                    momentumMax: { modifier: "-", value: 1 },
-                    momentumReset: { modifier: "-", value: 1 },
-                }));
+                moment.addAction(new StatAction("momentumMax", "-", 1));
+                moment.addAction(new StatAction("momentumReset", "-", 1));
             } else if (args[0] == "not") {
                 moment.addAction(removeDebility(args));
-                moment.addAction(new StatAction({
-                    momentumMax: { modifier: "+", value: 1 },
-                    momentumReset: { modifier: "+", value: 1 },
-                }));
+                moment.addAction(new StatAction("momentumMax", "+", 1));
+                moment.addAction(new StatAction("momentumReset", "+", 1));
             } else if (STATS[args[0]] !== undefined) {
                 moment.addAction(changeStat(args));
             } else {
@@ -1245,6 +1404,46 @@ function createMoment(input, type) {
     }
 
     return moment;
+}
+
+function updateAsset(args) {
+    if (args[1] == undefined) {
+        return;
+    }
+
+    let id = args[1].toLowerCase();
+    let action = new AssetAction(id);
+    action.assetName = args[1];
+
+    if (args.length == 2) {
+        // no arguments, so just add asset
+        action.action = "add";
+        return action;
+    }
+
+    if (!isNaN(args[2])) {
+        // first argument is a number, assume this is an upgrade
+        action.action = "upgrade";
+        action.upgradeIndex = Number(args[2]) - 1;
+        return action;
+    }
+
+    action.action = "update";
+    action.propertyId = args[2].toLowerCase();
+    action.propertyName = args[2];
+    
+    action.propertyModifier = "=";
+    let value = args[3];
+    if (isNaN(value)) {    
+        action.propertyValue = value;
+    } else {
+        if (value[0] == "+" || value[0] == "-") {
+            action.propertyModifier = value[0];
+        }
+        action.propertyValue = Math.abs(value);
+    }
+
+    return action;
 }
 
 function renameCharacter(args) {
@@ -1260,7 +1459,7 @@ function removeDebility(args) {
         return;
     }
 
-    let debilityName = args[1];
+    let debilityName = args[1].toLowerCase();
     if (DEBILITIES[debilityName] === undefined) {
         return;
     }
@@ -1273,7 +1472,7 @@ function addDebility(args) {
         return;
     }
 
-    let debilityName = args[1];
+    let debilityName = args[1].toLowerCase();
     if (DEBILITIES[debilityName] === undefined) {
         return;
     }
