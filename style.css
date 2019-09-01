@@ -249,7 +249,12 @@ body {
 #event-pane .event-roll {
     border-style: dashed;
     border-color: #bebebe;
-    background-color: #e7e6e6;
+    background-color: #bebebe;
+    color: #636363;
+}
+
+#event-pane .event-roll .actions button {
+    color: black;
 }
 
 #event-pane .event-base .content {
