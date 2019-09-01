@@ -590,7 +590,11 @@ let modeSwitch = undefined;
 let isControlPressed = false;
 let bondProgressTrack = undefined;
 let edittingEvent = null;
-let oldEditEventColor = null;
+let oldEditEventColor = {
+    background: "#FF",
+    border: "#FF",
+};
+let oldInput = "";
 
 let session = new Session();
 
@@ -1017,12 +1021,17 @@ function handleEditEvent(eventElement) {
     saveButton.style.display = "inline";
     cancelButton.style.display = "inline";
 
-    if (edittingEvent != null) {
-        edittingEvent.style.backgroundColor = oldEditEventColor;
+    if (edittingEvent == null) {
+        oldInput = entryInput.value;
+    } else {
+        edittingEvent.style.backgroundColor = oldEditEventColor.background;
+        edittingEvent.style.borderColor = oldEditEventColor.border;
     }
     edittingEvent = eventElement;
-    oldEditEventColor = eventElement.style.backgroundColor;
+    oldEditEventColor.background = eventElement.style.backgroundColor;
+    oldEditEventColor.border = eventElement.style.borderColor;
     eventElement.style.backgroundColor = "var(--mdc-theme-primary-light, #ff0000)";
+    eventElement.style.borderColor = "var(--mdc-theme-primary-light, #ff0000)";
     entryInput.value = eventElement.querySelector(".content").innerText;
 }
 
@@ -1030,17 +1039,19 @@ function handleCancelEditEvent() {
     submitButton.style.display = "block";
     saveButton.style.display = "none";
     cancelButton.style.display = "none";
-    edittingEvent.style.backgroundColor = oldEditEventColor;
+    edittingEvent.style.backgroundColor = oldEditEventColor.background;
+    edittingEvent.style.borderColor = oldEditEventColor.border;
 
     edittingEvent = null;
-    entryInput.value = null;
+    entryInput.value = oldInput;
 }
 
 function handleSaveEditEvent() {
     submitButton.style.display = "block";
     saveButton.style.display = "none";
     cancelButton.style.display = "none";
-    edittingEvent.style.backgroundColor = oldEditEventColor;
+    edittingEvent.style.backgroundColor = oldEditEventColor.background;
+    edittingEvent.style.borderColor = oldEditEventColor.border;
 
     edittingEvent.querySelector(".content").innerText = entryInput.value;
 
@@ -1059,7 +1070,7 @@ function handleSaveEditEvent() {
     refresh();
 
     edittingEvent = null;
-    entryInput.value = null;
+    entryInput.value = oldInput;
 }
 
 function handleDeleteEvent(eventElement) {
