@@ -101,7 +101,6 @@ const ORACLE = {
         99: "99",
         100: "100",
     },
-    "DIVIDER1": null,
     "Almost Certain": {
         10: "No",
         100: "Yes",
@@ -122,7 +121,37 @@ const ORACLE = {
         90: "No",
         100: "Yes",
     },
-    "DIVIDER2": null,
+    "Endure Harm": {
+        10: "The harm is mortal. Face Death.",
+        20: "You are dying. You need to Heal within an hour or two, or Face Death.",
+        35: "You are unconscious and out of action. If left alone, you come back to your senses in an hour or two. If you are vulnerable to a foe not inclined to show mercy, Face Death.",
+        50: "You are reeling and fighting to stay conscious. If you engage in any vigorous activity (such as running or fighting) before taking a breather for a few minutes, roll on this table again (before resolving the other move).",
+        100: "You are battered but still standing.",
+    },
+    "Endure Stress": {
+        10: "You are overwhelmed. Face Desolation.",
+        25: "You give up. Forsake Your Vow (if possible, one relevant to your current crisis).",
+        50: "You give in to a fear or compulsion, and act against your better instincts.",
+        100: "You persevere.",
+    },
+    "Pay the Price": {
+        2: "Roll again and apply that result but make it worse. If you roll this result yet again, think of something dreadful that changes the course of your quest (Ask the Oracle if unsure) and make it happen.",
+        5: "A person or community you trusted loses faith in you, or acts against you.",
+        9: "A person or community you care about is exposed to danger.",
+        16: "You are separated from something or someone.",
+        23: "Your action has an unintended effect.",
+        32: "Something of value is lost or destroyed.",
+        41: "The current situation worsens.",
+        50: "A new danger or foe is revealed.",
+        59: "It causes a delay or puts you at a disadvantage.",
+        68: "It is harmful.",
+        76: "It is stressful.",
+        85: "A surprising development complicates your quest.",
+        90: "It wastes resources.",
+        94: "It forces you to act against your best intentions.",
+        98: "A friend, companion, or ally is put in harm’s way (or you are, if alone).",
+        100: "Roll twice more on this table. Both results occur. If they are the same result, make it worse.",
+    },
     Action: {
         1: "Scheme",
         2: "Clash",
@@ -820,7 +849,7 @@ const ORACLE = {
         97: "Cowardly",
         98: "Obsessed",
         99: "Careless",
-        00: "Ironsworn",
+        100: "Ironsworn",
     },
     "Ironlander Names": [
         {
@@ -923,7 +952,7 @@ const ORACLE = {
             97: "Temir",
             98: "Bas",
             99: "Sabine",
-            00: "Tallus",
+            100: "Tallus",
         },
         {
             1: " Segura",
@@ -1025,7 +1054,7 @@ const ORACLE = {
             97: " Irsia",
             98: " Kayu",
             99: " Bevan",
-            00: " Chandra",
+            100: " Chandra",
         }
     ],
     "Elf Names": {
@@ -1078,7 +1107,7 @@ const ORACLE = {
         94: "Anunna",
         96: "Otani",
         98: "Ditani",
-        00: "Faraza",
+        100: "Faraza",
     },
     "Giant Names": {
         4: "Chony",
@@ -1105,7 +1134,7 @@ const ORACLE = {
         88: "Baku",
         92: "Tuban",
         96: "Qudan",
-        00: "Denua",
+        100: "Denua",
     },
     "Varou Names": {
         4: "Vata",
@@ -1132,7 +1161,7 @@ const ORACLE = {
         88: "Muko",
         92: "Dreko",
         96: "Aleko",
-        00: "Vojan",
+        100: "Vojan",
     },
     "Troll Names": {
         4: "Rattle",
@@ -1159,7 +1188,7 @@ const ORACLE = {
         88: "Vrusk",
         92: "Snuffle",
         96: "Leech",
-        00: "Herk",
+        100: "Herk",
     },
     "Combat Action": {
         3: "Compel a surrender",
@@ -1179,7 +1208,7 @@ const ORACLE = {
         78: "Create an opportunity",
         89: "Attack with precision",
         99: "Attack with power",
-        00: "Take a completely unexpected action",
+        100: "Take a completely unexpected action",
     },
     "Mystic Backlash": {
         4: "Your ritual has the opposite affect",
@@ -1206,7 +1235,7 @@ const ORACLE = {
         88: "Your ritual causes creatures to exhibit strange or aggressive behavior",
         92: "You are tormented by an apparition from your past",
         96: "You are wracked with sudden sickness",
-        00: "Roll twice more on this table. Both results occur. If they are the same result, make it worse.",
+        100: "Roll twice more on this table. Both results occur. If they are the same result, make it worse.",
     },
     "Major Plot Twist": {
         5: "It was all a diversion",
@@ -1228,13 +1257,13 @@ const ORACLE = {
         85: "The truth of a relationship is revealed",
         90: "Two seemingly unrelated situations are shown to be connected",
         95: "Unexpected powers or abilities are revealed",
-        00: "Roll twice more on this table. Both results occur. If they are the same result, make it more dramatic.",
+        100: "Roll twice more on this table. Both results occur. If they are the same result, make it more dramatic.",
     },
     "Challenge Rank": {
         20: "Troublesome",
         55: "Dangerous",
         80: "Formidable",
         93: "Extreme",
-        00: "Epic",
+        100: "Epic",
     },
 }
