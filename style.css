@@ -38,6 +38,30 @@ body {
     width: 100%;
 }
 
+/* Fixes select caret not respecting theme color */
+.mdc-select__dropdown-icon {
+    background-image: none;
+    color: #757575;
+}
+.mdc-select--focused .mdc-select__dropdown-icon {
+    background-image: none;
+    transform: rotate(180deg) translateX(10px);
+    color: var(--mdc-theme-primary, #6200ee);
+}
+.mdc-select--activated .mdc-select__dropdown-icon {
+    background-image: none;
+    transform: rotate(180deg) translateX(10px);
+    color: var(--mdc-theme-primary, #6200ee);
+}
+
+/* Fixes color of floating labels not respecting theme color */
+.mdc-select:not(.mdc-select--disabled).mdc-select--focused .mdc-floating-label {
+    color: var(--mdc-theme-primary, #6200ee);
+}
+.mdc-text-field:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-floating-label {
+    color: var(--mdc-theme-primary, #6200ee);
+}
+
 .page-container {
     width: 100%;
     height: 100%;
