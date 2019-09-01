@@ -1,6 +1,6 @@
 "use strict";
 
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
 const MAX_EXPERIENCE = 30;
 const MAX_PROGRESS = 10;
 
