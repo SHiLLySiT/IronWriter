@@ -1033,6 +1033,7 @@ function handleEditEvent(eventElement) {
     eventElement.style.backgroundColor = "var(--mdc-theme-primary-light, #ff0000)";
     eventElement.style.borderColor = "var(--mdc-theme-primary-light, #ff0000)";
     entryInput.value = eventElement.querySelector(".content").innerText;
+    eventElement.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
 }
 
 function handleCancelEditEvent() {
