@@ -513,6 +513,9 @@ class RollAction extends Action {
         } else if (totalAction > this.challenge[0] && totalAction > this.challenge[1]) {
             result = "> Strong Hit"
         }
+        if (this.challenge[0] == this.challenge[1]) {
+            result += " (Match)";
+        }
 
         let challengeOutput = "Challenge: [" + this.challenge[0] + ", " + this.challenge[1] + "]";
 
