@@ -354,7 +354,7 @@ body {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    width: 110px;
+    
 }
 
 #entry .input {

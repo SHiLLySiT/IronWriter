@@ -659,7 +659,7 @@ function handleInit() {
         window.open("https://github.com/SHiLLySiT/IronWriter/blob/master/readme.md");
     });
 
-    modeSwitch = new mdc.switchControl.MDCSwitch(document.getElementById("mode-switch"));
+    modeSwitch = document.getElementById("mode-switch").MDCIconButtonToggle;
 
     document.getElementById("version").textContent = "v" + VERSION;
 
@@ -904,7 +904,7 @@ function handleKeyDown(event) {
                 handleSaveEditEvent();
             }
         } else if (event.key == "m") {
-            modeSwitch.checked = !modeSwitch.checked;
+            modeSwitch.on = !modeSwitch.on;
         } 
     }
 }
@@ -961,7 +961,7 @@ function doRoll(statAdd, genericAdd, source) {
 
 function handleSubmitEvent() {
     let input = entryInput.value;
-    let type = (modeSwitch.checked) ? EventType.Meta : EventType.Fiction
+    let type = (modeSwitch.on) ? EventType.Meta : EventType.Fiction
     addEvent(session.history.length, input, type);
 
     let moment = createMoment(input, type);
