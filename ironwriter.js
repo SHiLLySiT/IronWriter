@@ -1354,7 +1354,6 @@ function refresh() {
 
         let e = document.createElement("li");
         e.classList.add("mdc-list-item")
-        e.classList.add("mdc-list-item--selected");
         e.textContent = session.state.progress[p].name;
         e.dataset.value = p;
         sourceList.appendChild(e);
