@@ -1250,6 +1250,10 @@ function handleDeleteEvent(eventElement) {
         session.removeMoment(eventElement.dataset.index);
         session.gotoPresentMoment();
 
+        if (eventElement === edittingEvent) {
+            handleCancelEditEvent();
+        }
+
         eventElement.remove();
         let eventElements = eventHistory.querySelectorAll(".event-base");
         for (let i = eventElement.dataset.index - 1; i < eventElements.length; i++) {
