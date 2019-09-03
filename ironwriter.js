@@ -52,7 +52,7 @@ class Session {
         this.version = VERSION;
         this.state = new GameState();
         /**
-         * @type {Moment}
+         * @type {Moment[]}
          */
         this.history = [];
         this.momentIndex = -1;
@@ -696,6 +696,7 @@ let oldEditEventColor = {
     border: "#FF",
 };
 let oldInput = "";
+let oldMode = false;
 
 let session = new Session();
 
@@ -1129,7 +1130,7 @@ function handleSubmitEvent() {
     refresh();
 }
 
-function addEvent(index, input, type) {
+function createEvent(content, type) {
     let newEvent = undefined;
     if (type == EventType.Meta) {
         newEvent = metaEventTemplate.cloneNode(true);
@@ -1147,10 +1148,14 @@ function addEvent(index, input, type) {
         return;
     }
     delete newEvent.id;
-
     newEvent.querySelector(".delete").addEventListener("click", () => handleDeleteEvent(newEvent));
+    newEvent.querySelector(".content").innerText = content;
+    return newEvent;
+}
+
+function addEvent(index, input, type) {
+    let newEvent = createEvent(input, type);
     newEvent.dataset.index = index;
-    newEvent.querySelector(".content").innerText = input
     eventHistory.appendChild(newEvent);
     newEvent.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
 }
@@ -1176,6 +1181,7 @@ function handleEditEvent(eventElement) {
 
     if (edittingEvent == null) {
         oldInput = entryInput.value;
+        oldMode = modeSwitch.on;
     } else {
         edittingEvent.style.backgroundColor = oldEditEventColor.background;
         edittingEvent.style.borderColor = oldEditEventColor.border;
@@ -1185,7 +1191,11 @@ function handleEditEvent(eventElement) {
     oldEditEventColor.border = eventElement.style.borderColor;
     eventElement.style.backgroundColor = "var(--mdc-theme-primary-light, #ff0000)";
     eventElement.style.borderColor = "var(--mdc-theme-primary-light, #ff0000)";
-    entryInput.value = eventElement.querySelector(".content").innerText;
+
+    let moment = session.history[edittingEvent.dataset.index];
+    entryInput.value = moment.input;
+    modeSwitch.on = (moment.type == EventType.Meta);
+
     eventElement.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
 }
 
@@ -1198,6 +1208,7 @@ function handleCancelEditEvent() {
 
     edittingEvent = null;
     entryInput.value = oldInput;
+    modeSwitch.on = oldMode;
 }
 
 function handleSaveEditEvent() {
@@ -1211,20 +1222,22 @@ function handleSaveEditEvent() {
 
     session.gotoMoment(edittingEvent.dataset.index - 1);
 
-    let moment = createMoment(entryInput.value, session.history[edittingEvent.dataset.index].type);
+    let type = (modeSwitch.on) ? EventType.Meta : EventType.Fiction
+    let moment = createMoment(entryInput.value, type);
     session.updateMoment(edittingEvent.dataset.index, moment);
     session.gotoPresentMoment();
 
-    let eventElements = eventHistory.querySelectorAll(".event-base");
-    for (let i = edittingEvent.dataset.index - 1; i < eventElements.length; i++) {
-        eventElements[i].querySelector(".content").innerText = session.history[i + 1].input;
-    }
+    let newEvent = createEvent(entryInput.value, type);
+    newEvent.dataset.index = edittingEvent.dataset.index;
+    eventHistory.insertBefore(newEvent, edittingEvent);
+    edittingEvent.remove();
 
     saveSession();
     refresh();
 
     edittingEvent = null;
     entryInput.value = oldInput;
+    modeSwitch.on = oldMode;
 }
 
 function handleDeleteEvent(eventElement) {
