@@ -688,7 +688,6 @@ let assetCard = undefined;
 let assetTemplate = undefined;
 let confirmDialog = undefined;
 
-let isControlPressed = false;
 let bondProgressTrack = undefined;
 let edittingEvent = null;
 let oldEditEventColor = {
@@ -734,7 +733,6 @@ function handleInit() {
     });
 
     window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
     window.addEventListener("resize", resizeDropdowns);
 
     confirmDialog = document.getElementById("confirm-dialog").MDCDialog;
@@ -1052,9 +1050,7 @@ function resizeDropdowns() {
 }
 
 function handleKeyDown(event) {
-    if (event.key == "Control") {
-        isControlPressed = true;
-    } else if (isControlPressed) {
+    if (event.getModifierState("Control")) {
         if (event.key == "Enter") {
             if (edittingEvent == null) {
                 handleSubmitEvent();
@@ -1064,12 +1060,6 @@ function handleKeyDown(event) {
         } else if (event.key == "m") {
             modeSwitch.on = !modeSwitch.on;
         } 
-    }
-}
-
-function handleKeyUp(event) {
-    if (event.key == "Control") {
-        isControlPressed = false;
     }
 }
 
