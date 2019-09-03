@@ -1,6 +1,6 @@
 "use strict";
 
-const VERSION = "0.2.0";
+const VERSION = "0.2.1";
 const MAX_EXPERIENCE = 30;
 const MAX_PROGRESS = 10;
 
@@ -52,7 +52,7 @@ class Session {
         this.version = VERSION;
         this.state = new GameState();
         /**
-         * @type {Moment}
+         * @type {Moment[]}
          */
         this.history = [];
         this.momentIndex = -1;
@@ -688,7 +688,6 @@ let assetCard = undefined;
 let assetTemplate = undefined;
 let confirmDialog = undefined;
 
-let isControlPressed = false;
 let bondProgressTrack = undefined;
 let edittingEvent = null;
 let oldEditEventColor = {
@@ -696,6 +695,7 @@ let oldEditEventColor = {
     border: "#FF",
 };
 let oldInput = "";
+let oldMode = false;
 
 let session = new Session();
 
@@ -733,7 +733,6 @@ function handleInit() {
     });
 
     window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
     window.addEventListener("resize", resizeDropdowns);
 
     confirmDialog = document.getElementById("confirm-dialog").MDCDialog;
@@ -1051,9 +1050,7 @@ function resizeDropdowns() {
 }
 
 function handleKeyDown(event) {
-    if (event.key == "Control") {
-        isControlPressed = true;
-    } else if (isControlPressed) {
+    if (event.getModifierState("Control")) {
         if (event.key == "Enter") {
             if (edittingEvent == null) {
                 handleSubmitEvent();
@@ -1063,12 +1060,6 @@ function handleKeyDown(event) {
         } else if (event.key == "m") {
             modeSwitch.on = !modeSwitch.on;
         } 
-    }
-}
-
-function handleKeyUp(event) {
-    if (event.key == "Control") {
-        isControlPressed = false;
     }
 }
 
@@ -1129,7 +1120,7 @@ function handleSubmitEvent() {
     refresh();
 }
 
-function addEvent(index, input, type) {
+function createEvent(content, type) {
     let newEvent = undefined;
     if (type == EventType.Meta) {
         newEvent = metaEventTemplate.cloneNode(true);
@@ -1147,10 +1138,14 @@ function addEvent(index, input, type) {
         return;
     }
     delete newEvent.id;
-
     newEvent.querySelector(".delete").addEventListener("click", () => handleDeleteEvent(newEvent));
+    newEvent.querySelector(".content").innerText = content;
+    return newEvent;
+}
+
+function addEvent(index, input, type) {
+    let newEvent = createEvent(input, type);
     newEvent.dataset.index = index;
-    newEvent.querySelector(".content").innerText = input
     eventHistory.appendChild(newEvent);
     newEvent.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
 }
@@ -1176,6 +1171,7 @@ function handleEditEvent(eventElement) {
 
     if (edittingEvent == null) {
         oldInput = entryInput.value;
+        oldMode = modeSwitch.on;
     } else {
         edittingEvent.style.backgroundColor = oldEditEventColor.background;
         edittingEvent.style.borderColor = oldEditEventColor.border;
@@ -1185,7 +1181,11 @@ function handleEditEvent(eventElement) {
     oldEditEventColor.border = eventElement.style.borderColor;
     eventElement.style.backgroundColor = "var(--mdc-theme-primary-light, #ff0000)";
     eventElement.style.borderColor = "var(--mdc-theme-primary-light, #ff0000)";
-    entryInput.value = eventElement.querySelector(".content").innerText;
+
+    let moment = session.history[edittingEvent.dataset.index];
+    entryInput.value = moment.input;
+    modeSwitch.on = (moment.type == EventType.Meta);
+
     eventElement.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
 }
 
@@ -1198,6 +1198,7 @@ function handleCancelEditEvent() {
 
     edittingEvent = null;
     entryInput.value = oldInput;
+    modeSwitch.on = oldMode;
 }
 
 function handleSaveEditEvent() {
@@ -1211,20 +1212,22 @@ function handleSaveEditEvent() {
 
     session.gotoMoment(edittingEvent.dataset.index - 1);
 
-    let moment = createMoment(entryInput.value, session.history[edittingEvent.dataset.index].type);
+    let type = (modeSwitch.on) ? EventType.Meta : EventType.Fiction
+    let moment = createMoment(entryInput.value, type);
     session.updateMoment(edittingEvent.dataset.index, moment);
     session.gotoPresentMoment();
 
-    let eventElements = eventHistory.querySelectorAll(".event-base");
-    for (let i = edittingEvent.dataset.index - 1; i < eventElements.length; i++) {
-        eventElements[i].querySelector(".content").innerText = session.history[i + 1].input;
-    }
+    let newEvent = createEvent(entryInput.value, type);
+    newEvent.dataset.index = edittingEvent.dataset.index;
+    eventHistory.insertBefore(newEvent, edittingEvent);
+    edittingEvent.remove();
 
     saveSession();
     refresh();
 
     edittingEvent = null;
     entryInput.value = oldInput;
+    modeSwitch.on = oldMode;
 }
 
 function handleDeleteEvent(eventElement) {
@@ -1236,6 +1239,10 @@ function handleDeleteEvent(eventElement) {
         session.gotoMoment(eventElement.dataset.index - 1);
         session.removeMoment(eventElement.dataset.index);
         session.gotoPresentMoment();
+
+        if (eventElement === edittingEvent) {
+            handleCancelEditEvent();
+        }
 
         eventElement.remove();
         let eventElements = eventHistory.querySelectorAll(".event-base");
@@ -1337,7 +1344,6 @@ function refresh() {
 
         let e = document.createElement("li");
         e.classList.add("mdc-list-item")
-        e.classList.add("mdc-list-item--selected");
         e.textContent = session.state.progress[p].name;
         e.dataset.value = p;
         sourceList.appendChild(e);
