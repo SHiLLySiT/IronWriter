@@ -1,6 +1,24 @@
 "use strict";
 
-const VERSION = "0.2.1";
+/*
+    IronWriter is an open-source writing tool for solo playthroughs of the free tabletop RPG Ironsworn.
+    Copyright (C) 2019 Alex Larioza
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see https://github.com/SHiLLySiT/IronWriter/blob/master/LICENSE.txt.
+*/
+
+const VERSION = "0.2.2";
 const MAX_EXPERIENCE = 30;
 const MAX_PROGRESS = 10;
 

@@ -1,3 +1,21 @@
+<!-- 
+    IronWriter is an open-source writing tool for solo playthroughs of the free tabletop RPG Ironsworn.
+    Copyright (C) 2019 Alex Larioza
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see https://github.com/SHiLLySiT/IronWriter/blob/master/LICENSE.txt.
+ -->
+
 <!DOCTYPE html>
 <html>
 
@@ -390,38 +408,38 @@
 
                         <!-- Rolls -->
                         <div class="roll-container">
-                            <div id="roll-source" class="mdc-select mdc-select--outlined"
-                                data-mdc-auto-init="MDCSelect">
-                                <input type="hidden" name="enhanced-select">
-                                <i class="fas fa-sort-down mdc-select__dropdown-icon"></i>
-                                <div class="mdc-select__selected-text"></div>
-                                <div class="mdc-select__menu mdc-menu mdc-menu-surface js-resize-menu"
-                                    data-select-id="roll-source">
+                            <div id="roll-source" class="mdc-select mdc-select--outlined" data-mdc-auto-init="MDCSelect">
+                                <div class="mdc-select__anchor"><i class="fas fa-sort-down mdc-select__dropdown-icon"></i>
+                                    <div class="mdc-select__selected-text" tabindex="0" aria-disabled="false"
+                                        aria-expanded="false"></div>
+                                    <div class="mdc-notched-outline mdc-notched-outline--upgraded">
+                                        <div class="mdc-notched-outline__leading"></div>
+                                        <div class="mdc-notched-outline__notch"><label id="outlined-label" class="mdc-floating-label">
+                                            Action Source</label></div>
+                                        <div class="mdc-notched-outline__trailing"></div>
+                                    </div>
+                                </div>
+                                <div class="mdc-select__menu mdc-menu mdc-menu-surface js-resize-menu" data-select-id="roll-source">
                                     <ul id="roll-source-list" class="mdc-list">
                                         <li class="mdc-list-item mdc-list-item--selected" data-value="actionDie"
-                                            aria-selected="true">Action
-                                            Die</li>
+                                            aria-selected="true">Action Die</li>
                                     </ul>
                                 </div>
-                                <div class="mdc-notched-outline">
-                                    <div class="mdc-notched-outline__leading"></div>
-                                    <div class="mdc-notched-outline__notch">
-                                        <label class="mdc-floating-label floating-label--float-above">Action
-                                            Source</label>
-                                    </div>
-                                    <div class="mdc-notched-outline__trailing"></div>
-                                </div>
-                                <div class="mdc-line-ripple"></div>
                             </div>
 
                             <div class="add-container">
-                                <div id="roll-stats" class="mdc-select mdc-select--outlined"
-                                    data-mdc-auto-init="MDCSelect">
-                                    <input type="hidden" name="enhanced-select">
-                                    <i class="fas fa-sort-down mdc-select__dropdown-icon"></i>
-                                    <div class="mdc-select__selected-text"></div>
-                                    <div class="mdc-select__menu mdc-menu mdc-menu-surface js-resize-menu"
-                                        data-select-id="roll-stats">
+                                <div id="roll-stats" class="mdc-select mdc-select--outlined" data-mdc-auto-init="MDCSelect">
+                                    <div class="mdc-select__anchor"><i class="fas fa-sort-down mdc-select__dropdown-icon"></i>
+                                        <div class="mdc-select__selected-text" tabindex="0" aria-disabled="false"
+                                            aria-expanded="false"></div>
+                                        <div class="mdc-notched-outline mdc-notched-outline--upgraded">
+                                            <div class="mdc-notched-outline__leading"></div>
+                                            <div class="mdc-notched-outline__notch"><label id="outlined-label" class="mdc-floating-label">
+                                                Stat Add</label></div>
+                                            <div class="mdc-notched-outline__trailing"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mdc-select__menu mdc-menu mdc-menu-surface js-resize-menu" data-select-id="roll-stats">
                                         <ul class="mdc-list">
                                             <li class="mdc-list-item mdc-list-item--selected" data-value=""
                                                 aria-selected="true"></li>
@@ -451,14 +469,6 @@
                                             </li>
                                         </ul>
                                     </div>
-                                    <div class="mdc-notched-outline">
-                                        <div class="mdc-notched-outline__leading"></div>
-                                        <div class="mdc-notched-outline__notch">
-                                            <label class="mdc-floating-label">Stat Add</label>
-                                        </div>
-                                        <div class="mdc-notched-outline__trailing"></div>
-                                    </div>
-                                    <div class="mdc-line-ripple"></div>
                                 </div>
 
                                 <div class="mdc-text-field mdc-text-field--outlined" data-mdc-auto-init="MDCTextField">

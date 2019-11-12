@@ -357,6 +357,12 @@ body {
 #entry .roll-container {
     margin-top: 16px;
 }
+#entry .roll-container .mdc-select__anchor {
+    width: 100%;
+}
+#entry .roll-container .mdc-select {
+    height: 56px;
+}
 #entry .roll-container .buttons {
     margin-top: 16px;
     display: flex;
