@@ -261,7 +261,7 @@ function exportSession() {
     let str = JSON.stringify(session);
     let uri = "data:application/json;charset=utf-8,"+ encodeURIComponent(str);
 
-    let exportFileDefaultName = "data.json";
+    let exportFileDefaultName = session.state.characterName + ".json";
 
     let linkElement = document.createElement("a");
     linkElement.setAttribute("href", uri);
