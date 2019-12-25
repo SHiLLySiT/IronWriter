@@ -17,7 +17,7 @@
     --mdc-theme-primary: #F44336;
     --mdc-theme-primary-light:#FFCDD2;
     --mdc-theme-primary-dark: #D32F2F;
-    --mdc-theme-secondary: #F44336;
+    --mdc-theme-secondary: #C3E4ED;
     --mdc-theme-background: #FFFFFF;
     --mdc-theme-text-primary-on-background: #212121;
     --mdc-theme-text-secondary-on-background: #757575;
@@ -341,6 +341,16 @@ body {
     color: black;
 }
 
+#event-pane .event-base,
+#event-pane .event-roll {
+    transition: background-color 0.25s linear;
+}
+
+#event-pane .bookmark-selected:focus,
+#event-pane .bookmark-selected:focus {
+    background-color: var(--mcd-theme-secondary, #C3E4ED);
+}
+
 #event-pane .event-base .content {
     padding-top: 8px;
     padding-bottom: 8px;
@@ -466,4 +476,8 @@ body {
     font-size: 1.15em;
     padding: 0px 8px;
     margin: 2px;
+}
+
+#bookmarks-list .mdc-list-item__meta i {
+    padding-left: 1rem;
 }

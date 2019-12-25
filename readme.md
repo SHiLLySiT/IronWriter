@@ -17,6 +17,8 @@ __IMPORTANT NOTE__: IronWriter is currently in active development and should be 
 * Save session to browser cache
 * Track assets
 * Track inventory items
+* Manual bookmarking of events to reference later
+* Auto-Bookmarking of events with bond and vow progress
 
 ## Open Source License
 IronWriter is an open-source writing tool for solo playthroughs of the free tabletop RPG Ironsworn.
@@ -47,6 +49,7 @@ along with this program. If not, see https://github.com/SHiLLySiT/IronWriter/blo
         * [Making Bonds](#Making-Bonds)
         * [Managing Assets](#Managing-Assets)
         * [Managing Inventory](#Managing-Inventory)
+        * [Bookmarking Events](#Bookmarking-Events)
 
 # Quick start
 * Visit www.alexlarioza.com/IronWriter or clone this repo and open [index.html](index.html) in your browser.
@@ -76,11 +79,15 @@ IronWriter uses special markup (referred to as "tags") to automatically update t
 
 _For a full example, see the [example session](/docs/sample.md)._
 
-Tags contain parameters which are used to control how the tags change the character sheet. Parameters are separated by spaces, so if you want to include spaces wrap the parameter in double quotes e.g. `rename "Brynn Tahir"`. In the documentation, parameters that are wrapped in carets `<parameter>` are required and those wrapped in curly braces `{parameters}` are optional.
+Tags contain parameters which are used to control how the tags change the character sheet or other event-based features like bookmarks. Parameters are separated by spaces, so if you want to include spaces wrap the parameter in double quotes e.g. `rename "Brynn Tahir"`. In the documentation, parameters that are wrapped in carets `<parameter>` are required and those wrapped in curly braces `{parameters}` are optional.
 
 All events are stored in a history stack so that when you edit an event, any subsequent ones that are dependent on it will be replayed on top of your changes.
 
 ![alt text](/docs/images/history.gif)
+
+IronWriter includes a bookmarking system to help you quickly traverse the history for noteworthy events. There are two types of bookmarks - those created by the system when you make/break a bond or make progress on a vow, and those you create yourself using the `bookmark` tag. Both types of bookmarks are saved between sessions and exist in exports.
+
+![alt text](/docs/images/bookmarks.jpg)
 
 # Tags
 ## Renaming your character
@@ -256,3 +263,15 @@ item <name> <property> {modifier}<value>
 * `item Dagger Condition +2` Adds "2" to the "Condition" property for the item called "Dagger".
 * `item Dagger Condition -5` Subtracts "5" from the "Condition" property for the item called "Dagger".
 * `item Waterskin Level Full` Sets the "Level" property to "Full" for the item called "Waterskin".
+
+## Bookmarking Events
+Adds a Bookmark to the bookmark list.
+```
+bookmark <name>
+```
+
+### Parameters
+* `<name>` The name of the bookmark.
+
+### Examples
+* `bookmark "Arrived at Greathill"` Adds a bookmark called "Arrived at Greathill".
