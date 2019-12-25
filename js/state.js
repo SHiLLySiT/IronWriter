@@ -107,27 +107,41 @@ class GameState {
          * @type {Object.<string, Asset>}
          */
         this.assets = {};
+
+        /**
+         * @type {Object.<string, InventoryItem>}
+         */
+        this.items = {};
     }
 }
 
-class Asset {
+class Resource {
     /**
      * @param {string} name
      */
     constructor(name) {
         this.name = name;
         /**
-         * @type {Object.<string, AssetProperty>}
+         * @type {Object.<string, ResourceProperty>}
          */
         this.properties = {};
-        this.upgrades = [false, false, false];
     }
 }
 
-class AssetProperty {
+class ResourceProperty {
     constructor() {
         this.name = "";
         this.value = undefined;
+    }
+}
+
+class Asset extends Resource {
+    /**
+     * @param {string} name
+     */
+    constructor(name) {
+        super(name);
+        this.upgrades = [false, false, false];
     }
 }
 
@@ -137,6 +151,25 @@ class Bond {
      */
     constructor(name) {
         this.name = name;
+    }
+}
+
+class InventoryItem extends Resource {
+    /**
+     * @param {string} name
+     */
+    constructor(name) {
+        super(name);
+
+        let quantityProp = new ResourceProperty();
+        quantityProp.name = "Quantity";
+        quantityProp.value = 1;
+        /**
+         * @type {Object.<string, ResourceProperty>}
+         */
+        this.properties = {
+            "quantity": quantityProp
+        };
     }
 }
 
@@ -252,7 +285,7 @@ class AssetAction extends Action {
 
             let prop = gameState.assets[this.assetId].properties[this.propertyId];
             if (prop === undefined) {
-                let prop = new AssetProperty();
+                let prop = new ResourceProperty();
                 prop.name = this.propertyName;
                 prop.value = this.propertyValue;
                 gameState.assets[this.assetId].properties[this.propertyId] = prop;
@@ -284,6 +317,68 @@ class AssetAction extends Action {
      */
     unapplyAction(gameState, moment) {
         gameState.assets[this.assetId] = moment.state.assets[this.assetId];
+    }
+}
+
+class InventoryAction extends Action {
+    /**
+     * @param {string} inventoryId
+     */
+    constructor(inventoryId) {
+        super();
+        this.type = "InventoryAction";
+        this.inventoryId = inventoryId;
+        this.action = "";
+        this.inventoryName = "";
+        this.propertyId = "";
+        this.propertyName = "";
+        this.propertyValue = undefined;
+        this.propertyModifier = "";
+    }
+
+   /**
+     * @param {GameState} gameState
+     * @param {Moment} moment
+     */
+    applyAction(gameState, moment) {
+
+        if (this.action == "add") {
+            gameState.items[this.inventoryId] = new InventoryItem(this.inventoryName);
+        } else if (this.action == "remove") {
+            delete gameState.items[this.inventoryId];
+        } else if (this.action == "update") {
+            if (gameState.items[this.inventoryId] === undefined) {
+                return;
+            }
+
+            let prop = gameState.items[this.inventoryId].properties[this.propertyId];
+            if (prop === undefined) {
+                let prop = new ResourceProperty();
+                prop.name = this.propertyName;
+                prop.value = this.propertyValue;
+                gameState.items[this.inventoryId].properties[this.propertyId] = prop;
+            } else {
+                if (isNaN(prop.value)) {
+                    prop.value = this.propertyValue;
+                } else {
+                    if (this.propertyModifier == "+") {
+                        prop.value += this.propertyValue;
+                    } else if (this.propertyModifier == "-") {
+                        prop.value -= this.propertyValue;
+                    } else {
+                        prop.value = this.propertyValue;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @param {GameState} gameState
+     * @param {Moment} moment
+     */
+    unapplyAction(gameState, moment) {
+        gameState.items[this.inventoryId] = moment.state.items[this.inventoryId];
     }
 }
 
@@ -626,4 +721,5 @@ const ACTION_TYPES = {
     "OracleAction": OracleAction,
     "RollAction": RollAction,
     "AssetAction": AssetAction,
+    "InventoryAction": InventoryAction,
 }
