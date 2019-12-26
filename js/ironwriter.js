@@ -281,6 +281,7 @@ function loadSession(str) {
         session.history[i] = _.merge(new Moment, session.history[i]);
         for (let j = 0; j < session.history[i].actions.length; j++) {
             let type = session.history[i].actions[j].type;
+            if (ACTION_TYPES[type] === undefined) { continue; }
             session.history[i].actions[j] = _.merge(new ACTION_TYPES[type], session.history[i].actions[j]);
         }
     }
