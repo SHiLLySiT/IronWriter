@@ -120,6 +120,10 @@ body {
     align-items: flex-start;
 }
 
+#container .mdc-card {
+    position: relative;
+}
+
 /* Character sheet style */
 #character-pane {
     min-width: 355px;
@@ -136,6 +140,34 @@ body {
 #character-pane hr {
     width: 100%;
     border: 0.5px solid lightgray;
+}
+
+.mdc-card .card-collapse-icon {
+    cursor: pointer;
+    padding: 1em;
+    opacity: 0%;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: all 0.1s ease-out;
+}
+
+.mdc-card:hover .card-collapse-icon {
+    opacity: 100%;
+}
+
+.mdc-card .card-collapse-toggle {
+    display: none;
+}
+
+.card-collapse-toggle:checked ~ .card-collapse-icon {
+    transform: rotate(-90deg) translateX(3px) translateY(-1px);
+}
+
+.card-collapse-toggle:checked ~ hr,
+.card-collapse-toggle:checked ~ div,
+.card-collapse-toggle:checked ~ ul {
+    display: none;
 }
 
 .status-group {
