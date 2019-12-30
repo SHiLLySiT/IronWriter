@@ -158,12 +158,12 @@ class InventoryItem extends Resource {
     /**
      * @param {string} name
      */
-    constructor(name) {
+    constructor(name, quantity = 1) {
         super(name);
 
         let quantityProp = new ResourceProperty();
         quantityProp.name = "Quantity";
-        quantityProp.value = 1;
+        quantityProp.value = quantity;
         /**
          * @type {Object.<string, ResourceProperty>}
          */
@@ -343,7 +343,8 @@ class InventoryAction extends Action {
     applyAction(gameState, moment) {
 
         if (this.action == "add") {
-            gameState.items[this.inventoryId] = new InventoryItem(this.inventoryName);
+            //Assume the action's propertyValue is the quantity
+            gameState.items[this.inventoryId] = new InventoryItem(this.inventoryName, this.propertyValue);
         } else if (this.action == "remove") {
             delete gameState.items[this.inventoryId];
         } else if (this.action == "update") {

@@ -959,7 +959,7 @@ function updateInventory(args) {
         args[2] = 'Quantity';
     }
 
-    action.action = "update";
+    action.action = (session.state.items[id]) ? "update" : "add";
     action.propertyId = args[2].toLowerCase();
     action.propertyName = args[2];
 

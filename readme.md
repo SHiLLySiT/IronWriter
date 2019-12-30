@@ -250,8 +250,8 @@ item <name> <property> {modifier}<value>
 * `<value>` The value of the property. Can be a number or text.
 
 ### Examples
-* `item Arrow` Adds an item called "Arrow" with a default "Quantity" property set at "1".
-* `item Arrow 10` Sets the "Quantity" property to "10" for the "Arrow" item.
+* `item Dagger` Adds an item called "Dagger" with the default "Quantity" property set at "1".
+* `item Arrows 5` Adds an item called "Arrows" with the "Quantity" property set at "5".
 * `item Dagger Condition 3` Sets the "Sharpness" property to "3" for the item called "Dagger".
 * `item Dagger Condition +2` Adds "2" to the "Condition" property for the item called "Dagger".
 * `item Dagger Condition -5` Subtracts "5" from the "Condition" property for the item called "Dagger".
