@@ -157,7 +157,15 @@ function handleInit() {
     characterName = document.getElementById("character-name");
 
     document.getElementById("import").addEventListener("click", () => {
-        importSession();
+        let handler = (action) => { 
+            confirmDialog.root_.removeEventListener("MDCDialog:closed", handler);
+            if (action.detail.action == "accept") {
+                importSession();
+            }
+        };
+        confirmDialog.root_.addEventListener("MDCDialog:closed", handler);
+        confirmDialog.content_.textContent = "Are you sure you want to import a session? Your current session will be lost.";
+        confirmDialog.open();
     });
 
     document.getElementById("export").addEventListener("click", () => {
@@ -249,6 +257,7 @@ function importSession() {
         let file = event.target.files[0];
         var reader = new FileReader();
         reader.addEventListener("load", () => {
+            newSession();
             loadSession(reader.result); 
             saveSession();
         });
