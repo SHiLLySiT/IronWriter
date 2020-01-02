@@ -93,6 +93,8 @@ let characterName = undefined;
 let modeSwitch = undefined;
 let assetCard = undefined;
 let assetTemplate = undefined;
+let inventoryCard = undefined;
+let inventoryTemplate = undefined;
 let confirmDialog = undefined;
 
 let bondProgressTrack = undefined;
@@ -211,6 +213,7 @@ function handleInit() {
     initRoll();
     initOracle();
     initAssets();
+    initInventory();
 
     window.requestAnimationFrame(() => {
         let str = localStorage.getItem("session");
@@ -311,6 +314,12 @@ function initAssets() {
     assetTemplate.remove();
 }
 
+function initInventory() {
+    inventoryCard = document.getElementById("inventory-card");
+    inventoryTemplate = document.getElementById("inventory-template");
+    inventoryTemplate.remove();
+}
+
 function initRoll() {
     let rollSource = document.getElementById("roll-source");
     let rollStats = document.getElementById("roll-stats");
@@ -401,12 +410,32 @@ function initBonds() {
 }
 
 /**
+ * @params {Resource} resource
+ */
+function createResource(resource, template) {
+    let newResource = template.cloneNode(true);
+
+    newResource.querySelector(".name").textContent = resource.name;
+
+    let properties = newResource.querySelector(".properties");
+    for (let p in resource.properties) {
+        if (resource.properties[p] === undefined) {
+            continue;
+        }
+
+        let e = document.createElement("div");
+        e.textContent = resource.properties[p].name + ": " + resource.properties[p].value;
+        properties.appendChild(e);
+    }
+
+    return newResource;
+}
+
+/**
  * @param {Asset} asset
  */
 function createAsset(asset) {
-    let newAsset = assetTemplate.cloneNode(true);
-
-    newAsset.querySelector(".name").textContent = asset.name;
+    let newAsset = createResource(asset, assetTemplate);
 
     let upgrades = newAsset.querySelector(".upgrades");
     for (let i = 0; i < upgrades.children.length; i++) {
@@ -421,18 +450,14 @@ function createAsset(asset) {
         }
     }
 
-    let properties = newAsset.querySelector(".properties");
-    for (let p in asset.properties) {
-        if (asset.properties[p] === undefined) {
-            continue;
-        }
-
-        let e = document.createElement("div");
-        e.textContent = asset.properties[p].name + ": " + asset.properties[p].value;
-        properties.appendChild(e);
-    }
-
     return newAsset;
+}
+
+/**
+ * @param {InventoryItem} item
+ */
+function createInventory(item) {
+    return createResource(item, inventoryTemplate);
 }
 
 function createProgressTrack(name, rank, roll) {
@@ -803,6 +828,28 @@ function refresh() {
         let asset = createAsset(state);
         assetList.appendChild(asset);
     }
+
+    // inventory items
+    let itemList = inventoryCard.querySelector(".items");
+    while (itemList.children.length > 0) {
+        let last = itemList.children.length - 1;
+        itemList.children[last].remove();
+    }
+    for (let p in session.state.items) {
+        let state = session.state.items[p];
+        if (session.state.items[p] == undefined) {
+            continue;
+        }
+
+        if (itemList.children.length > 0) {
+            let divider = document.createElement("hr");
+            divider.classList.add("card-divider");
+            itemList.appendChild(divider);
+        }
+
+        let item = createInventory(state);
+        itemList.appendChild(item);
+    }
 }
 
 function createMoment(input, type) {
@@ -826,6 +873,8 @@ function createMoment(input, type) {
                 moment.addAction(removeBond(args));
             } else if (args[0] == "asset") {
                 moment.addAction(updateAsset(args));
+            } else if (args[0] == "item") {
+                moment.addAction(updateInventory(args));
             } else if (args[0] == "progress") {
                 moment.addAction(progress(args));
             } else if (args[0] == "rename") {
@@ -874,7 +923,46 @@ function updateAsset(args) {
     action.action = "update";
     action.propertyId = args[2].toLowerCase();
     action.propertyName = args[2];
-    
+
+    action.propertyModifier = "=";
+    let value = args[3];
+    if (isNaN(value)) {
+        action.propertyValue = value;
+    } else {
+        if (value[0] == "+" || value[0] == "-") {
+            action.propertyModifier = value[0];
+        }
+        action.propertyValue = Math.abs(value);
+    }
+
+    return action;
+}
+
+function updateInventory(args) {
+    if (args[1] == undefined) {
+        return;
+    }
+
+    let id = args[1].toLowerCase();
+    let action = new InventoryAction(id);
+    action.inventoryName = args[1];
+
+    if (args.length == 2) {
+        // no arguments, so just add inventory item
+        action.action = "add";
+        return action;
+    }
+
+    if (args.length == 3) {
+        // assume last argument is quantity
+        args[3] = args[2];
+        args[2] = 'Quantity';
+    }
+
+    action.action = (session.state.items[id]) ? "update" : "add";
+    action.propertyId = args[2].toLowerCase();
+    action.propertyName = args[2];
+
     action.propertyModifier = "=";
     let value = args[3];
     if (isNaN(value)) {    

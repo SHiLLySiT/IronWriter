@@ -241,11 +241,16 @@ body {
     margin-bottom: 16px;
 }
 
-/* Assets */
-#asset-card .asset-container {
+/* Assets & Inventory */
+#asset-card .asset-container,
+#inventory-card .inventory-continer {
     display: flex;
     flex-direction: row;
     align-items: center;
+}
+#asset-card .asset-container .properties,
+#inventory-card .inventory-container .properties {
+    font-size: 0.75em;
 }
 #asset-card .asset-container .upgrades {
     display: flex;
@@ -255,9 +260,6 @@ body {
 }
 #asset-card .asset-container .upgrades > div {
     padding-bottom: 2px;
-}
-#asset-card .asset-container .properties {
-    font-size: 0.75em;
 }
 
 /* Event Log Style */
