@@ -90,12 +90,18 @@ body {
     align-items: center;
     justify-content: space-between;
 }
-.header button {
-    background-color: var(--mdc-theme-primary, #6200ee);
-    color: white;
+.header .mdc-button {
+    width: 40px;
+    min-width: 40px;
+    padding: 0px;
 }
-.header button:hover {
-    color: white;
+.header .mdc-button__ripple {
+    width: 40px;
+    top: auto !important;
+    left: auto !important;
+}
+.header .mdc-button i {
+    font-size: 1.5em;
 }
 .header h1 {
     padding: 0px;
