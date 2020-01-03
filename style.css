@@ -36,6 +36,7 @@ html, body {
 body {
     background-color: #d3d3d3;
     width: 100%;
+    overflow: hidden;
 }
 
 /* Fixes select caret not respecting theme color */
