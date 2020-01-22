@@ -16,6 +16,9 @@ __IMPORTANT NOTE__: IronWriter is currently in active development and should be 
 * Import/Export
 * Save session to browser cache
 * Track assets
+* Track inventory items
+* Manual bookmarking of events to reference later
+* Auto-Bookmarking of events with bond and vow progress
 
 ## Open Source License
 IronWriter is an open-source writing tool for solo playthroughs of the free tabletop RPG Ironsworn.
@@ -45,6 +48,8 @@ along with this program. If not, see https://github.com/SHiLLySiT/IronWriter/blo
         * [Marking Progress](#Marking-Progress)
         * [Making Bonds](#Making-Bonds)
         * [Managing Assets](#Managing-Assets)
+        * [Managing Inventory](#Managing-Inventory)
+        * [Bookmarking Events](#Bookmarking-Events)
 
 # Quick start
 * Visit www.alexlarioza.com/IronWriter or clone this repo and open [index.html](index.html) in your browser.
@@ -74,11 +79,15 @@ IronWriter uses special markup (referred to as "tags") to automatically update t
 
 _For a full example, see the [example session](/docs/sample.md)._
 
-Tags contain parameters which are used to control how the tags change the character sheet. Parameters are separated by spaces, so if you want to include spaces wrap the parameter in double quotes e.g. `rename "Brynn Tahir"`. In the documentation, parameters that are wrapped in carets `<parameter>` are required and those wrapped in curly braces `{parameters}` are optional.
+Tags contain parameters which are used to control how the tags change the character sheet or other event-based features like bookmarks. Parameters are separated by spaces, so if you want to include spaces wrap the parameter in double quotes e.g. `rename "Brynn Tahir"`. In the documentation, parameters that are wrapped in carets `<parameter>` are required and those wrapped in curly braces `{parameters}` are optional.
 
 All events are stored in a history stack so that when you edit an event, any subsequent ones that are dependent on it will be replayed on top of your changes.
 
 ![alt text](/docs/images/history.gif)
+
+IronWriter includes a bookmarking system to help you quickly traverse the history for noteworthy events. There are two types of bookmarks - those created by the system when you make/break a bond or make progress on a vow, and those you create yourself using the `bookmark` tag. Both types of bookmarks are saved between sessions and exist in exports.
+
+![alt text](/docs/images/bookmarks.jpg)
 
 # Tags
 ## Renaming your character
@@ -90,7 +99,7 @@ rename <character name>
 * `<character name>` The desired name.
 
 ### Examples
-* `rename Maura` Sets the character name to "Joe".
+* `rename Maura` Sets the character name to "Maura".
 * `rename "Brynn Tahir"` Sets the character name to "Brynn Tahir".
     
 ## Changing Stats
@@ -172,12 +181,12 @@ progress <name> {modifier}
     * Not passing this parameter automatically adds the number of ticks as specified by the `challenge rank`.
 
 ### Examples
-* `progress "Kill Martu" formidable` Creates a new progress track called "Kill Jorge" and sets it's rank to `formidable`
+* `progress "Kill Martu" formidable` Creates a new progress track called "Kill Martu" and sets it's rank to `formidable`
 * `progress "Kill Martu"` Increases the number of ticks by 4.
 * `progress "Kill Martu" +1` Increases the number of ticks by 1.
 * `progress "Kill Martu" -2` Decreases the number of ticks by 2.
 * `progress "Kill Martu" 8` Sets the number of ticks to 8.
-* `progress "Kill Martu" complete` Removes the progress track called "Kill Jorge".
+* `progress "Kill Martu" complete` Removes the progress track called "Kill Martu".
 
 ## Making Bonds
 Adds a bond to your list of bonds and adds a tick to your bond progress track.
@@ -218,7 +227,51 @@ asset <name> <property> {modifier}<value>
 ### Examples
 * `asset Ritualist` Adds an asset called "Ritualist".
 * `asset Ritualist 1` Unlocks the perk in slot "1" for asset called "Ritualist".
-* `asset Hawk Health 1` Sets the "Health" property to "1" for the asset called "Hawk"
-* `asset Hawk Health +10` Adds "10" to the "Health" property for the asset called "Hawk"
-* `asset Hawk Health -5` Subtracts "5" from the "Health" property for the asset called "Hawk"
+* `asset Hawk Health 1` Sets the "Health" property to "1" for the asset called "Hawk".
+* `asset Hawk Health +10` Adds "10" to the "Health" property for the asset called "Hawk".
+* `asset Hawk Health -5` Subtracts "5" from the "Health" property for the asset called "Hawk".
 * `asset Wright Specialty Herbalism` Sets the "Specialty" property to "Herbalism" for the asset called "Wright".
+
+## Managing Inventory
+Adds and updates your character's inventory.
+```
+item <name> <quantity>
+```
+```
+item <name> <property> {modifier}<value>
+```
+
+### Parameters
+* `<name>` The name of the item.
+* `<quantity>` The value you wish to set for the "Quantity" property of the item. Defaults to `1` if not specified.
+    The following options can be used:
+    * `{+/-}<value>` The quantity to add, remove, or set.
+        * `+` Adds the specified `value`.
+        * `-` Subtracts the specified `value`.
+        * Not specifying a modifier sets the "Quantity" property to the specified `value`.
+* `<property>` The name of an item property.
+* `{modifier}` How you want the `value` parameter to be applied. The following options can be used:
+    * `+` (Number Only) Adds the specified `value`.
+    * `-` (Number Only) Subtracts the specified `value`.
+    * Not specifying a modifier sets the stat to the specified `value`.
+* `<value>` The value of the property. Can be a number or text.
+
+### Examples
+* `item Dagger` Adds an item called "Dagger" with the default "Quantity" property set at "1".
+* `item Arrows 5` Adds an item called "Arrows" with the "Quantity" property set at "5".
+* `item Dagger Condition 3` Sets the "Sharpness" property to "3" for the item called "Dagger".
+* `item Dagger Condition +2` Adds "2" to the "Condition" property for the item called "Dagger".
+* `item Dagger Condition -5` Subtracts "5" from the "Condition" property for the item called "Dagger".
+* `item Waterskin Level Full` Sets the "Level" property to "Full" for the item called "Waterskin".
+
+## Bookmarking Events
+Adds a Bookmark to the bookmark list.
+```
+bookmark <name>
+```
+
+### Parameters
+* `<name>` The name of the bookmark.
+
+### Examples
+* `bookmark "Arrived at Greathill"` Adds a bookmark called "Arrived at Greathill".

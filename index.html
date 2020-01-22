@@ -21,6 +21,7 @@
 
 <head>
     <title>IronWriter</title>
+    <meta charset="utf-8">
 
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -39,8 +40,9 @@
 
     <link href="style.css" rel="stylesheet">
 
-    <script src="oracles.js"></script>
-    <script src="ironwriter.js"></script>
+    <script src="js/oracles.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/ironwriter.js"></script>
 </head>
 
 <body>
@@ -54,17 +56,25 @@
                         <i id="version">v0.0.0</i>
                     </div>
 
-                    <div class="mdc-chip-set">
-                        <button id="new" class="mdc-chip" title="New Session" data-mdc-auto-init="MDCRipple">
+                    <div class="buttons">
+                        <button id="new" title="New Session" class="mdc-button" data-mdc-auto-init="MDCRipple">
+                            <div class="mdc-button__ripple"></div>
                             <i class="fas fa-file"></i>
                         </button>
-                        <button id="import" class="mdc-chip" title="Import Session" data-mdc-auto-init="MDCRipple">
+                        <button id="import" title="Import Session" class="mdc-button" data-mdc-auto-init="MDCRipple">
+                            <div class="mdc-button__ripple"></div>
                             <i class="fas fa-file-upload"></i>
                         </button>
-                        <button id="export" class="mdc-chip" title="Export Session" data-mdc-auto-init="MDCRipple">
+                        <button id="export" title="Export Session" class="mdc-button" data-mdc-auto-init="MDCRipple">
+                            <div class="mdc-button__ripple"></div>
                             <i class="fas fa-file-download"></i>
                         </button>
-                        <button id="help" class="mdc-chip" title="Help" data-mdc-auto-init="MDCRipple">
+                        <button id="bookmarks"  title="Bookmarks" class="mdc-button" data-mdc-auto-init="MDCRipple">
+                            <div class="mdc-button__ripple"></div>
+                            <i class="fas fa-bookmark"></i>
+                        </button>
+                        <button id="help" title="Help" class="mdc-button" data-mdc-auto-init="MDCRipple">
+                            <div class="mdc-button__ripple"></div>
                             <i class="fas fa-question"></i>
                         </button>
                     </div>
@@ -76,8 +86,11 @@
             <!-- Character Sheet Panel -->
             <div id="character-pane">
                 <div class="mdc-card">
+                    <input id="character-card-toggle" class="card-collapse-toggle" type="checkbox" aria-hidden="true">
+                    <label for="character-card-toggle" class="card-collapse-icon">
+                        <i class="fas fa-chevron-down"></i>
+                    </label>
                     <h3>Character</h3>
-
                     <div class="status-group">
                         <div>Name</div>
                         <div id="character-name" class="status-group">John Doe</div>
@@ -143,7 +156,7 @@
                             </div>
                             <div id="stat-supply" class="stat-box">
                                 <div class="frame">
-                                    <div id="stat-supply" class="stat-value">0</div>
+                                    <div class="stat-value">0</div>
                                     <div class="stat-name">Supply</div>
                                 </div>
                             </div>
@@ -218,6 +231,10 @@
                 </div>
 
                 <div id="bond-card" class="mdc-card">
+                    <input id="bond-card-toggle" class="card-collapse-toggle" type="checkbox" aria-hidden="true">
+                    <label for="bond-card-toggle" class="card-collapse-icon">
+                        <i class="fas fa-chevron-down"></i>
+                    </label>
                     <h3>Bonds</h3>
                     <div class="track-container">
                         <div id="progress-track-template" class="progress-track">
@@ -248,12 +265,20 @@
                 </div>
 
                 <div id="progress-card" class="mdc-card">
+                    <input id="progress-card-toggle" class="card-collapse-toggle" type="checkbox" aria-hidden="true">
+                    <label for="progress-card-toggle" class="card-collapse-icon">
+                        <i class="fas fa-chevron-down"></i>
+                    </label>
                     <h3>Progress</h3>
                     <div class="tracks">
                     </div>
                 </div>
 
                 <div id="asset-card" class="mdc-card">
+                    <input id="asset-card-toggle" class="card-collapse-toggle" type="checkbox" aria-hidden="true">
+                    <label for="asset-card-toggle" class="card-collapse-icon">
+                        <i class="fas fa-chevron-down"></i>
+                    </label>
                     <h3>Assets</h3>
                     <div class="assets">
                         <div id="asset-template" class="asset-container">
@@ -280,6 +305,23 @@
                         </div>
                     </div>
                 </div>
+
+                <div id="inventory-card" class="mdc-card">
+                    <input id="inventory-card-toggle" class="card-collapse-toggle" type="checkbox" aria-hidden="true">
+                    <label for="inventory-card-toggle" class="card-collapse-icon">
+                        <i class="fas fa-chevron-down"></i>
+                    </label>
+                    <h3>Inventory</h3>
+                    <div class="items">
+                        <div id="inventory-template" class="inventory-container">
+                            <div>
+                                <div class="name">Arrows</div>
+                                <div class="properties">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Event Log -->
@@ -288,7 +330,7 @@
                     <div id="event-history">
                         <div data-index="0"></div>
                         <div id="fiction-event-template"
-                            class="event-base event-fiction mdc-card mdc-card--outlined mdc-elevation--z1">
+                            class="event-base event-fiction mdc-card mdc-card--outlined mdc-elevation--z1" tabindex="-1">
                             <div class="content">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean
                                 condimentum
                                 tellus ornare orci posuere ornare. Aenean in est at metus auctor ornare.Lorem ipsum
@@ -308,7 +350,7 @@
                                 </button>
                             </div>
                         </div>
-                        <div id="meta-event-template" class="event-base event-roll mdc-card mdc-card--outlined">
+                        <div id="meta-event-template" class="event-base event-roll mdc-card mdc-card--outlined" tabindex="-1">
                             <div class="content">Roll 2d4+1 = 6</div>
                             <div class="actions">
                                 <button class="mdc-button edit">
@@ -325,7 +367,7 @@
                     </div>
 
                     <div id="entry" class="mdc-card">
-                        <div class="entry-tab mdc-tab-bar" role="tablist">
+                        <div id="entry-tabs" class="entry-tab mdc-tab-bar" role="tablist">
                             <div class="mdc-tab-scroller">
                                 <div class="mdc-tab-scroller__scroll-area">
                                     <div class="mdc-tab-scroller__scroll-content">
@@ -381,15 +423,16 @@
                             </div>
                             <div class="input">
                                 <div class="entry-buttons">
-                                    <button id="submit-event" title="Submit Event (CTRL+Enter)" class="mdc-button mdc-button--raised"
-                                        data-mdc-auto-init="MDCRipple">
+                                    <button id="submit-event" title="Submit Event (CTRL+Enter)" class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
+                                        <div class="mdc-button__ripple"></div>
                                         <span class="mdc-button__label">Submit</span>
                                     </button>
                                     <button id="cancel-event" class="mdc-button" data-mdc-auto-init="MDCRipple">
+                                        <div class="mdc-button__ripple"></div>
                                         <span class="mdc-button__label">Cancel</span>
                                     </button>
-                                    <button id="save-event" title="Save Event (CTRL+Enter)" class="mdc-button mdc-button--raised"
-                                        data-mdc-auto-init="MDCRipple">
+                                    <button id="save-event" title="Save Event (CTRL+Enter)" class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
+                                        <div class="mdc-button__ripple"></div>
                                         <span class="mdc-button__label">Save</span>
                                     </button>
                                 </div>
@@ -415,14 +458,14 @@
                                     <div class="mdc-notched-outline mdc-notched-outline--upgraded">
                                         <div class="mdc-notched-outline__leading"></div>
                                         <div class="mdc-notched-outline__notch"><label id="outlined-label" class="mdc-floating-label">
-                                            Action Source</label></div>
+                                            Progress Track</label></div>
                                         <div class="mdc-notched-outline__trailing"></div>
                                     </div>
                                 </div>
-                                <div class="mdc-select__menu mdc-menu mdc-menu-surface js-resize-menu" data-select-id="roll-source">
+                                <div class="mdc-select__menu mdc-menu mdc-menu-surface js-resize-menu" data-select-id="roll-source" data-mdc-auto-init="MDCMenu">
                                     <ul id="roll-source-list" class="mdc-list">
-                                        <li class="mdc-list-item mdc-list-item--selected" data-value="actionDie"
-                                            aria-selected="true">Action Die</li>
+                                        <li class="mdc-list-item mdc-list-item--selected" data-value=""
+                                            aria-selected="true"></li>
                                     </ul>
                                 </div>
                             </div>
@@ -439,7 +482,7 @@
                                             <div class="mdc-notched-outline__trailing"></div>
                                         </div>
                                     </div>
-                                    <div class="mdc-select__menu mdc-menu mdc-menu-surface js-resize-menu" data-select-id="roll-stats">
+                                    <div class="mdc-select__menu mdc-menu mdc-menu-surface js-resize-menu" data-select-id="roll-stats" data-mdc-auto-init="MDCMenu">
                                         <ul class="mdc-list">
                                             <li class="mdc-list-item mdc-list-item--selected" data-value=""
                                                 aria-selected="true"></li>
@@ -485,6 +528,7 @@
 
                             <div class="buttons">
                                 <button id="roll" class="mdc-button mdc-button--raised" data-mdc-auto-init="MDCRipple">
+                                    <div class="mdc-button__ripple"></div>
                                     <span class="mdc-button__label">Roll</span>
                                 </button>
                                 <button id="roll-reset" title="Reset to Defaults" class="mdc-icon-button">
@@ -519,6 +563,81 @@
                     </button>
                     <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="accept">
                         <span class="mdc-button__label">OK</span>
+                    </button>
+                </footer>
+            </div>
+        </div>
+        <div class="mdc-dialog__scrim"></div>
+    </div>
+
+    <div id="bookmarks-dialog" class="mdc-dialog" role="alertdialog" aria-modal="true" aria-labelledby="my-dialog-title"
+        aria-describedby="my-dialog-content" data-mdc-auto-init="MDCDialog">
+        <div class="mdc-dialog__container">
+            <div class="mdc-dialog__surface">
+                <h2 class="mdc-dialog__title" id="my-dialog-title">Bookmarks</h2>
+                <div id="bookmarks-filter" class="mdc-tab-bar" role="tablist" data-mdc-auto-init="MDCTabBar">
+                  <div class="mdc-tab-scroller">
+                    <div class="mdc-tab-scroller__scroll-area">
+                      <div class="mdc-tab-scroller__scroll-content">
+                        <button class="mdc-tab mdc-tab--stacked mdc-tab--active" role="tab" aria-selected="true">
+                          <span class="mdc-tab__content">
+                            <i class="mdc-tab__icon fas fa-asterisk"></i>
+                            <span class="mdc-tab__text-label">All</span>
+                          </span>
+                          <span class="mdc-tab-indicator mdc-tab-indicator--active">
+                            <span class="mdc-tab-indicator__content mdc-tab-indicator__content--underline"></span>
+                          </span>
+                          <span class="mdc-tab__ripple"></span>
+                        </button>
+                        <button class="mdc-tab mdc-tab--stacked" role="tab">
+                          <span class="mdc-tab__content">
+                            <i class="mdc-tab__icon fas fa-link"></i>
+                            <span class="mdc-tab__text-label">Bonds</span>
+                          </span>
+                          <span class="mdc-tab-indicator">
+                            <span class="mdc-tab-indicator__content mdc-tab-indicator__content--underline"></span>
+                          </span>
+                          <span class="mdc-tab__ripple"></span>
+                        </button>
+                        <button class="mdc-tab mdc-tab--stacked" role="tab">
+                          <span class="mdc-tab__content">
+                            <i class="mdc-tab__icon far fa-file-alt"></i>
+                            <span class="mdc-tab__text-label">Fiction & Meta</span>
+                          </span>
+                          <span class="mdc-tab-indicator">
+                            <span class="mdc-tab-indicator__content mdc-tab-indicator__content--underline"></span>
+                          </span>
+                          <span class="mdc-tab__ripple"></span>
+                        </button>
+                        <button class="mdc-tab mdc-tab--stacked" role="tab">
+                          <span class="mdc-tab__content">
+                            <i class="mdc-tab__icon far fa-star"></i>
+                            <span class="mdc-tab__text-label">Progress</span>
+                          </span>
+                          <span class="mdc-tab-indicator">
+                            <span class="mdc-tab-indicator__content mdc-tab-indicator__content--underline"></span>
+                          </span>
+                          <span class="mdc-tab__ripple"></span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mdc-dialog__content" id="my-dialog-content">
+                    <ul id="bookmarks-list" class="mdc-list" data-mdc-auto-init="MDCList">
+                        <li id="bookmark-template" class="mdc-list-item" data-event-index="0">
+                            <span class="content mdc-list-item__text">
+                                Lorem ipsum
+                            </span>
+                            <span class="mdc-list-item__meta" aria-hidden="true">
+                                <i class="far fa-file-alt" title="Fiction"></i>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+                <footer class="mdc-dialog__actions">
+                    <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
+                        <span class="mdc-button__label">Close</span>
                     </button>
                 </footer>
             </div>

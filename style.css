@@ -17,7 +17,7 @@
     --mdc-theme-primary: #F44336;
     --mdc-theme-primary-light:#FFCDD2;
     --mdc-theme-primary-dark: #D32F2F;
-    --mdc-theme-secondary: #F44336;
+    --mdc-theme-secondary: #C3E4ED;
     --mdc-theme-background: #FFFFFF;
     --mdc-theme-text-primary-on-background: #212121;
     --mdc-theme-text-secondary-on-background: #757575;
@@ -36,6 +36,7 @@ html, body {
 body {
     background-color: #d3d3d3;
     width: 100%;
+    overflow: hidden;
 }
 
 /* Fixes select caret not respecting theme color */
@@ -90,12 +91,18 @@ body {
     align-items: center;
     justify-content: space-between;
 }
-.header button {
-    background-color: var(--mdc-theme-primary, #6200ee);
-    color: white;
+.header .mdc-button {
+    width: 40px;
+    min-width: 40px;
+    padding: 0px;
 }
-.header button:hover {
-    color: white;
+.header .mdc-button__ripple {
+    width: 40px;
+    top: auto !important;
+    left: auto !important;
+}
+.header .mdc-button i {
+    font-size: 1.5em;
 }
 .header h1 {
     padding: 0px;
@@ -111,6 +118,10 @@ body {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
+}
+
+#container .mdc-card {
+    position: relative;
 }
 
 /* Character sheet style */
@@ -129,6 +140,34 @@ body {
 #character-pane hr {
     width: 100%;
     border: 0.5px solid lightgray;
+}
+
+.mdc-card .card-collapse-icon {
+    cursor: pointer;
+    padding: 1em;
+    opacity: 0%;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: all 0.1s ease-out;
+}
+
+.mdc-card:hover .card-collapse-icon {
+    opacity: 100%;
+}
+
+.mdc-card .card-collapse-toggle {
+    display: none;
+}
+
+.card-collapse-toggle:checked ~ .card-collapse-icon {
+    transform: rotate(-90deg) translateX(3px) translateY(-1px);
+}
+
+.card-collapse-toggle:checked ~ hr,
+.card-collapse-toggle:checked ~ div,
+.card-collapse-toggle:checked ~ ul {
+    display: none;
 }
 
 .status-group {
@@ -241,11 +280,16 @@ body {
     margin-bottom: 16px;
 }
 
-/* Assets */
-#asset-card .asset-container {
+/* Assets & Inventory */
+#asset-card .asset-container,
+#inventory-card .inventory-continer {
     display: flex;
     flex-direction: row;
     align-items: center;
+}
+#asset-card .asset-container .properties,
+#inventory-card .inventory-container .properties {
+    font-size: 0.75em;
 }
 #asset-card .asset-container .upgrades {
     display: flex;
@@ -255,9 +299,6 @@ body {
 }
 #asset-card .asset-container .upgrades > div {
     padding-bottom: 2px;
-}
-#asset-card .asset-container .properties {
-    font-size: 0.75em;
 }
 
 /* Event Log Style */
@@ -291,13 +332,23 @@ body {
 
 #event-pane .event-roll {
     border-style: dashed;
-    border-color: #bebebe;
-    background-color: #bebebe;
-    color: #636363;
+    border-color: #c1c1c1;
+    background-color: #c1c1c1;
+    color: #333;
 }
 
 #event-pane .event-roll .actions button {
     color: black;
+}
+
+#event-pane .event-base,
+#event-pane .event-roll {
+    transition: background-color 0.25s linear;
+}
+
+#event-pane .bookmark-selected:focus,
+#event-pane .bookmark-selected:focus {
+    background-color: var(--mcd-theme-secondary, #C3E4ED);
 }
 
 #event-pane .event-base .content {
@@ -425,4 +476,8 @@ body {
     font-size: 1.15em;
     padding: 0px 8px;
     margin: 2px;
+}
+
+#bookmarks-list .mdc-list-item__meta i {
+    padding-left: 1rem;
 }

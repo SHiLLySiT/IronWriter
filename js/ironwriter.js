@@ -18,7 +18,7 @@
     along with this program. If not, see https://github.com/SHiLLySiT/IronWriter/blob/master/LICENSE.txt.
 */
 
-const VERSION = "0.2.2";
+const VERSION = "0.3.0";
 const MAX_EXPERIENCE = 30;
 const MAX_PROGRESS = 10;
 
@@ -58,6 +58,8 @@ const DEBILITIES = {
     tormented: 0,
 };
 
+const SCROLL_EFFECT = { behavior: "smooth", block: "center", inline: "nearest" };
+
 const EventType = {
     None: 'none',
     Fiction: 'fiction',
@@ -65,616 +67,22 @@ const EventType = {
     Roll: 'roll',
 }
 
-class Session {
-    constructor() {
-        this.version = VERSION;
-        this.state = new GameState();
-        /**
-         * @type {Moment[]}
-         */
-        this.history = [];
-        this.momentIndex = -1;
-    }
-
-    /**
-     * @param {Moment} moment
-     */
-    addMoment(moment) {
-        this.history.push(moment);
-        moment.applyMoment(this.state);
-        this.momentIndex++;
-    }
-
-    /**
-     * @param {Moment} moment
-     */
-    updateMoment(index, moment) {
-        this.history[index] = moment;
-    }
-
-    /**
-     * @param {number} index
-     */
-    removeMoment(index) {
-        this.history.splice(index, 1);
-    }
-
-    /**
-     * @param {number} index
-     */
-    gotoMoment(index) {
-        let dir = Math.sign(index - this.momentIndex);
-        if (dir == -1) {
-            for (let i = this.momentIndex; i > index; i--) {
-                this.history[i].unapplyMoment(this.state, this.history[i]);
-            }
-        } else if (dir == 1) {
-            for (let i = this.momentIndex + 1; i <= index; i++) {
-                this.history[i].applyMoment(this.state);
-            }
-        }
-        this.momentIndex = index;
-    }
-
-    gotoPresentMoment() {
-        this.gotoMoment(this.history.length - 1);
-    }
+const BookmarkTypeMapping = {
+    'fiction': {iconClass: 'far fa-file-alt', title: "Fiction"},
+    'meta': {iconClass: 'fas fa-file-alt', title: "Meta"},
+    'bond': {iconClass: 'fas fa-link', title: "Bond"},
+    'unbond': {iconClass: 'fas fa-unlink', title: "Unbond"},
+    'progress_add': {iconClass: 'far fa-star', title: "Started Progress"},
+    'progress_progress': {iconClass: 'fas fa-star-half-alt', title: "Made Progress" },
+    'progress_complete': {iconClass: 'fas fa-star', title: "Completed Progress"},
 }
 
-class GameState {
-    constructor() {
-        this.characterName = "";
-
-        /**
-         * @type {Object.<string, Number>}
-         */
-        this.stats = {};
-        for (let p in STATS) {
-            this.stats[p] = 0;
-        }
-
-        /**
-         * @type {Object.<string, Boolean>}
-         */
-        this.debilities = {};
-        for (let p in DEBILITIES) {
-            this.debilities[p] = false;
-        }
-
-        /**
-         * @type {Object.<string, Progress>}
-         */
-        this.progress = {};
-
-        /**
-         * @type {Object.<string, Bond>}
-         */
-        this.bonds = {};
-
-        /**
-         * @type {Object.<string, Asset>}
-         */
-        this.assets = {};
-    }
-}
-
-class Asset {
-    /**
-     * @param {string} name
-     */
-    constructor(name) {
-        this.name = name;
-        /**
-         * @type {Object.<string, AssetProperty>}
-         */
-        this.properties = {};
-        this.upgrades = [false, false, false];
-    }
-}
-
-class AssetProperty {
-    constructor() {
-        this.name = "";
-        this.value = undefined;
-    }
-}
-
-class Bond {
-    /**
-     * @param {string} name
-     */
-    constructor(name) {
-        this.name = name;
-    }
-}
-
-class Progress {
-    /**
-     * @param {String} name
-     * @param {String} rank
-     * @param {Number} value
-     */
-    constructor(name, rank, value) {
-        this.name = name;
-        this.rank = rank;
-        this.value = value;
-    }
-}
-
-class Moment {
-    
-    /**
-     * @param {string} input
-     * @param {string} type
-     */
-    constructor(input, type) {
-        /**
-         * @type {Action[]}
-         */
-        this.actions = [];
-        /**
-         * @type {GameState}
-         */
-        this.state = undefined;
-        this.input = input;
-        this.type = type;
-    }
-
-    /**
-     * @param {Action} action
-     */
-    addAction(action) {
-        if (action === undefined) {
-            return;
-        }
-        this.actions.push(action);
-    }
-
-    /**
-     * @param {GameState} gameState
-     */
-    applyMoment(gameState) {
-        this.state = _.cloneDeep(gameState);
-        for (let i = 0; i < this.actions.length; i++) {
-            this.actions[i].applyAction(gameState, this);
-        }
-    }
-
-    /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    unapplyMoment(gameState, moment) {
-        for (let i = 0; i < this.actions.length; i++) {
-            this.actions[i].unapplyAction(gameState, this);
-        }
-    }
-}
-
-class Action {
-    /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    applyAction(gameState, moment) {
-    }
-
-    /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    unapplyAction(gameState, moment) {
-    }
-}
-
-class AssetAction extends Action {
-    /**
-     * @param {string} assetId
-     */
-    constructor(assetId) {
-        super();
-        this.type = "AssetAction";
-        this.assetId = assetId;
-        this.action = "";
-        this.assetName = "";
-        this.upgradeIndex = -1;
-        this.propertyId = "";
-        this.propertyName = "";
-        this.propertyValue = undefined;
-        this.propertyModifier = "";
-    }
-
-   /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    applyAction(gameState, moment) {
-        if (this.action == "add") {
-            gameState.assets[this.assetId] = new Asset(this.assetName);
-        } else if (this.action == "remove") {
-            delete gameState.assets[this.assetId];
-        } else if (this.action == "update") {
-            if (gameState.assets[this.assetId] === undefined) {
-                return;
-            }
-
-            let prop = gameState.assets[this.assetId].properties[this.propertyId];
-            if (prop === undefined) {
-                let prop = new AssetProperty();
-                prop.name = this.propertyName;
-                prop.value = this.propertyValue;
-                gameState.assets[this.assetId].properties[this.propertyId] = prop;
-            } else {
-                if (isNaN(prop.value)) {
-                    prop.value = this.propertyValue;
-                } else {
-                    if (this.propertyModifier == "+") {
-                        prop.value += this.propertyValue;
-                    } else if (this.propertyModifier == "-") {
-                        prop.value -= this.propertyValue;
-                    } else {
-                        prop.value = this.propertyValue;
-                    }
-                }
-            }
-        } else if (this.action == "upgrade") {
-            if (gameState.assets[this.assetId] === undefined) {
-                return;
-            }
-
-            gameState.assets[this.assetId].upgrades[this.upgradeIndex] = true;
-        }
-    }
-
-    /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    unapplyAction(gameState, moment) {
-        gameState.assets[this.assetId] = moment.state.assets[this.assetId];
-    }
-}
-
-class StatAction extends Action {
-    /**
-     * @param {String} stat
-     * @param {String} modifier
-     * @param {Number} value
-     */
-    constructor(statId, modifier, value) {
-        super();
-        this.type = "StatAction";
-        this.statId = statId;
-        this.modifier = modifier;
-        this.value = value;
-    }
-
-   /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    applyAction(gameState, moment) {
-        if (this.modifier == "+") {
-            gameState.stats[this.statId] += this.value;
-        } else if (this.modifier == "-") {
-            gameState.stats[this.statId] -= this.value;
-        } else {
-            gameState.stats[this.statId] = this.value;
-        }
-        
-        if (gameState.stats.momentumReset < 0) {
-            gameState.stats.momentumReset = 0;
-        }
-    }
-
-    /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    unapplyAction(gameState, moment) {
-        gameState.stats[this.statId] = moment.state.stats[this.statId];
-    }
-}
-
-class CharacterNameAction extends Action {
-    /**
-     * @param {string} newName
-     */
-    constructor(newName) {
-        super();
-        this.type = "CharacterNameAction";
-        this.characterName = newName;
-    }
-
-    /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    applyAction(gameState, moment) {
-        gameState.characterName = this.characterName;
-    }
-
-    /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    unapplyAction(gameState, moment) {
-        gameState.characterName = moment.state.characterName;
-    }
-}
-
-class DebilityAction extends Action {
-    /**
-     * @param {string} debilityId
-     * @param {Boolean} value
-     */
-    constructor(debilityId, value) {
-        super();
-        this.type = "DebilityAction";
-        this.debilityId = debilityId;
-        this.value = value;
-    }
-
-    /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    applyAction(gameState, moment) {
-        gameState.debilities[this.debilityId] = this.value;
-    }
-
-    /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    unapplyAction(gameState, moment) {
-        gameState.debilities[this.debilityId] = moment.state.debilities[this.debilityId];
-    }
-}
-
-class ProgressAction extends Action {
-    constructor(progressId) {
-        super();
-        this.type = "ProgressAction";
-        this.progressId = progressId;
-        this.progressName = "";
-        this.rank = "";
-        this.action = "";
-        this.modifier = "";
-        this.value = 0;
-    }
-
-    /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    applyAction(gameState, moment) {
-        if (this.action == "add") {
-            if (gameState.progress[this.progressId] !== undefined) {
-                return;
-            }
-
-            gameState.progress[this.progressId] = new Progress(
-                this.progressName,
-                this.rank,
-                0,
-            );
-        } else {
-            if (gameState.progress[this.progressId] === undefined) {
-                return;
-            }
-
-            if (this.action == "complete") {
-                delete gameState.progress[this.progressId];
-            } else if (this.action == "progress") {
-                let state = gameState.progress[this.progressId];
-                state.value = state.value + CHALLENGE_RANKS[state.rank];
-            } else if (this.action == "tick") {
-                let state = gameState.progress[this.progressId];
-                if (this.modifier == "+") {
-                    state.value += this.value;
-                } else if (this.modifier == "-") {
-                    state.value -= this.value;
-                } else {
-                    state.value = this.value;
-                }
-            }
-        }
-    }
-
-    /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    unapplyAction(gameState, moment) {
-        if (this.action == "add") {
-            gameState.progress[this.progressId] = moment.state.progress[this.progressId];
-        } else if (this.action == "complete") {
-            gameState.progress[this.progressId] = moment.state.progress[this.progressId];
-        } else {
-            if (gameState.progress[this.progressId] === undefined) {
-                return;
-            }
-
-            if (this.action == "progress") {
-                let state = gameState.progress[this.progressId];
-                state.value = state.value - CHALLENGE_RANKS[state.rank];
-            } else if (this.action == "tick") {
-                let state = gameState.progress[this.progressId];
-                state.value = moment.state.progress[this.progressId].value;
-            }
-        }
-    }
-}
-
-class BondAction extends Action {
-    /**
-     * @param {string} bondId
-     */
-    constructor(bondId) {
-        super();
-        this.type = "BondAction";
-        this.bondId = bondId;
-        this.action = "";
-        this.bondName = "";
-    }
-
-    /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    applyAction(gameState, moment) {
-        if (this.action == "add") {
-            if (gameState.bonds[this.bondId] === undefined) {
-                gameState.bonds[this.bondId] = new Bond(this.bondName);
-                gameState.stats.bonds++;
-            }
-        } else if (this.action == "remove") {
-            if (gameState.bonds[this.bondId] !== undefined) {
-                delete gameState.bonds[this.bondId];
-                gameState.stats.bonds--;
-            }
-        }
-    }
-
-    /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    unapplyAction(gameState, moment) {
-        if (this.action == "add") {
-            if (moment.state.bonds[this.bondId] === undefined) {
-                delete gameState.bonds[this.bondId];
-                gameState.stats.bonds--;
-            }
-        } else if (this.action == "remove") {
-            if (moment.state.bonds[this.bondId] !== undefined) {
-                gameState.bonds[this.bondId] = moment.state.bonds[this.bondId];
-                gameState.stats.bonds++;
-            }
-        }
-    }
-}
-
-class OracleAction extends Action {
-    /**
-     * @param {string} oracleType
-     */
-    constructor(oracleType) {
-        super();
-        this.type = "OracleAction";
-        this.oracleType = oracleType;
-    }
-
-   /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    applyAction(gameState, moment) {
-        // oracles do not change state
-    }
-
-   /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    unapplyAction(gameState, moment) {
-        // oracles do not change state
-    }
-}
-
-class RollAction extends Action {
-    /**
-     * @param {string} statAdd
-     * @param {number} genericAdd
-     * @param {string} source
-     */
-    constructor(statAdd, genericAdd, source) {
-        super();
-        this.type = "RollAction";
-        
-        this.statAddName = statAdd;
-        this.genericAdd = Number(genericAdd);
-        this.challenge = [0, 0];
-        this.action = 0;
-        this.source = source;
-        
-        this.reroll();
-    }
-
-    /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    applyAction(gameState, moment) {
-        let statAddValue = 0;
-        if (this.statAddName.length > 0) {
-            statAddValue = gameState.stats[this.statAddName];
-        }
-
-        let actionValue = this.action;
-        if (this.source != "actionDie" && moment.state.progress[this.source] !== undefined) {
-            let ticks = moment.state.progress[this.source].value;
-            actionValue = Math.floor(ticks / 4);
-        }
-
-        let result = "> Weak Hit";
-        let totalAction = actionValue + statAddValue + this.genericAdd;
-        if (totalAction < this.challenge[0] && totalAction < this.challenge[1]) {
-            result = "> Miss"
-        } else if (totalAction > this.challenge[0] && totalAction > this.challenge[1]) {
-            result = "> Strong Hit"
-        }
-        if (this.challenge[0] == this.challenge[1]) {
-            result += " (Match)";
-        }
-
-        let challengeOutput = "Challenge: [" + this.challenge[0] + ", " + this.challenge[1] + "]";
-
-        let actionOutput = undefined;
-        if (this.source != "actionDie" && moment.state.progress[this.source] !== undefined) {
-            actionOutput = "Action: " + actionValue + " (" + moment.state.progress[this.source].name + ")";
-        } else {
-            actionOutput = "Action: [" + actionValue + "]";
-        }
-        
-        if (this.statAddName.length > 0) {
-            actionOutput += " + " + statAddValue + " (" + this.statAddName + ")";
-        }
-        if (this.genericAdd > 0) {
-            actionOutput += " + " + this.genericAdd;
-        }
-        if (this.statAddName.length > 0 || this.genericAdd > 0) {
-            actionOutput += " = " + totalAction;
-        }
-
-        moment.input = challengeOutput + "\n" + actionOutput + "\n" + result;
-    }
-
-    /**
-     * @param {GameState} gameState
-     * @param {Moment} moment
-     */
-    unapplyAction(gameState, moment) {
-        
-    }
-
-    reroll() {
-        this.challenge = new rpgDiceRoller.DiceRoll("2d10").rolls[0];
-        this.action = new rpgDiceRoller.DiceRoll("1d6").rolls[0][0];
-    }
-}
-
-const ACTION_TYPES = {
-    "StatAction": StatAction,
-    "CharacterNameAction": CharacterNameAction,
-    "DebilityAction": DebilityAction,
-    "ProgressAction": ProgressAction,
-    "BondAction": BondAction,
-    "OracleAction": OracleAction,
-    "RollAction": RollAction,
-    "AssetAction": AssetAction,
-}
+const BookmarkFilterTypeMapping = {
+    /* "all" is implied */
+    1: ['bond', 'unbond'],
+    2: ['fiction', 'meta'],
+    3: ['progress_add', 'progress_progress', 'progress_complete']
+};
 
 let statElements = {};
 for (let p in STATS) {
@@ -696,6 +104,7 @@ let fictionEventTemplate = undefined;
 let metaEventTemplate = undefined;
 let entryInput = undefined;
 let eventHistory = undefined;
+let eventHistoryScrollObserver = undefined;
 let progressCard = undefined;
 let progressTrackTemplate = undefined;
 let bondCard = undefined;
@@ -704,7 +113,14 @@ let characterName = undefined;
 let modeSwitch = undefined;
 let assetCard = undefined;
 let assetTemplate = undefined;
+let inventoryCard = undefined;
+let inventoryTemplate = undefined;
 let confirmDialog = undefined;
+let bookmarksDialog = undefined;
+let bookmarksFilter = undefined;
+let bookmarksFilterIndex = 0;
+let bookmarksList = undefined;
+let bookmarkTemplate = undefined;
 
 let bondProgressTrack = undefined;
 let edittingEvent = null;
@@ -714,6 +130,8 @@ let oldEditEventColor = {
 };
 let oldInput = "";
 let oldMode = false;
+
+let scrolledIndex = null;
 
 let session = new Session();
 
@@ -730,8 +148,8 @@ function handleInit() {
 
     let storyContainer = document.querySelector(".story-container");
 
-    let inputTab = new mdc.tabBar.MDCTabBar(document.querySelector(".mdc-tab-bar"));
-    inputTab.listen("MDCTabBar:activated", (event) => {
+    let entryTab = new mdc.tabBar.MDCTabBar(document.getElementById('entry-tabs'));
+    entryTab.listen("MDCTabBar:activated", (event) => {
         if (event.detail.index == 0) {
             storyContainer.style.display = "block";
             rollContainer.style.display = "none";
@@ -768,7 +186,15 @@ function handleInit() {
     characterName = document.getElementById("character-name");
 
     document.getElementById("import").addEventListener("click", () => {
-        importSession();
+        let handler = (action) => { 
+            confirmDialog.root_.removeEventListener("MDCDialog:closed", handler);
+            if (action.detail.action == "accept") {
+                importSession();
+            }
+        };
+        confirmDialog.root_.addEventListener("MDCDialog:closed", handler);
+        confirmDialog.content_.textContent = "Are you sure you want to import a session? Your current session will be lost.";
+        confirmDialog.open();
     });
 
     document.getElementById("export").addEventListener("click", () => {
@@ -814,6 +240,8 @@ function handleInit() {
     initRoll();
     initOracle();
     initAssets();
+    initInventory();
+    initBookmarks();
 
     window.requestAnimationFrame(() => {
         let str = localStorage.getItem("session");
@@ -829,7 +257,7 @@ function handleInit() {
         let events = eventHistory.querySelectorAll("#event-history .event-base");
         if (events.length > 0) {
             let lastEvent = events[events.length - 1];
-            lastEvent.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+            lastEvent.scrollIntoView(SCROLL_EFFECT);
         }
     });    
 }
@@ -860,6 +288,7 @@ function importSession() {
         let file = event.target.files[0];
         var reader = new FileReader();
         reader.addEventListener("load", () => {
+            newSession();
             loadSession(reader.result); 
             saveSession();
         });
@@ -872,7 +301,7 @@ function exportSession() {
     let str = JSON.stringify(session);
     let uri = "data:application/json;charset=utf-8,"+ encodeURIComponent(str);
 
-    let exportFileDefaultName = "data.json";
+    let exportFileDefaultName = session.state.characterName + ".json";
 
     let linkElement = document.createElement("a");
     linkElement.setAttribute("href", uri);
@@ -892,6 +321,7 @@ function loadSession(str) {
         session.history[i] = _.merge(new Moment, session.history[i]);
         for (let j = 0; j < session.history[i].actions.length; j++) {
             let type = session.history[i].actions[j].type;
+            if (ACTION_TYPES[type] === undefined) { continue; }
             session.history[i].actions[j] = _.merge(new ACTION_TYPES[type], session.history[i].actions[j]);
         }
     }
@@ -910,6 +340,12 @@ function initAssets() {
     assetCard = document.getElementById("asset-card");
     assetTemplate = document.getElementById("asset-template");
     assetTemplate.remove();
+}
+
+function initInventory() {
+    inventoryCard = document.getElementById("inventory-card");
+    inventoryTemplate = document.getElementById("inventory-template");
+    inventoryTemplate.remove();
 }
 
 function initRoll() {
@@ -1001,13 +437,87 @@ function initBonds() {
     bondTemplate.remove();
 }
 
+function initBookmarks() {
+    bookmarksDialog = document.getElementById("bookmarks-dialog").MDCDialog;
+    bookmarksFilter = document.getElementById("bookmarks-filter").MDCTabBar;
+    bookmarksList = document.getElementById("bookmarks-list").MDCList;
+    bookmarkTemplate = document.getElementById('bookmark-template');
+    bookmarkTemplate.remove();
+
+    eventHistoryScrollObserver = new IntersectionObserver(handleEventHistoryScroll, {root: eventHistory, threshold: 1.0});
+
+    bookmarksFilter.listen("MDCTabBar:activated", (event) => {
+        bookmarksFilterIndex = event.detail.index;
+        refreshBookmarksList(bookmarksFilterIndex);
+    });
+
+    bookmarksList.root_.addEventListener("MDCList:action", (event) => {
+        let eventIndex = bookmarksList.listElements[event.detail.index].dataset.eventIndex;
+        // While you can pass an object to the `close` call, the docs indicate it should be a string, so...
+        bookmarksDialog.close("bookmarkSelected:" + eventIndex);
+    });
+
+    document.getElementById("bookmarks").addEventListener("click", () => {
+        bookmarksDialog.open();
+    });
+
+    bookmarksDialog.listen("MDCDialog:closed", (event) => {
+        let [action, index] = event.detail.action.split(':');
+        if (index === undefined) { return; }
+        let item = eventHistory.querySelector('.mdc-card[data-index="' + index + '"]');
+        eventHistoryScrollObserver.observe(item);
+        scrolledIndex = index;
+        // Timeout needed for Chrome workaround since MDCDialog.close() will cancel all animation frames (and thus the
+        // smooth scroll) even at this late stage in its lifecycle.
+        setTimeout( (el) => { el.scrollIntoView(SCROLL_EFFECT) }, 0, item);
+    });
+}
+
+
+function handleEventHistoryScroll(event) {
+    if (scrolledIndex === null || event[0].isIntersecting === false ) { return; }
+
+    let eventElement = event[0].target;
+    eventElement.classList.add('bookmark-selected');
+    eventElement.focus();
+    eventElement.addEventListener('blur', handleEventHistoryBlur);
+    eventHistoryScrollObserver.unobserve(eventElement);
+    scrolledIndex = null;
+}
+
+function handleEventHistoryBlur(event) {
+    let el = event.target;
+    el.classList.remove('bookmark-selected');
+    el.removeEventListener('blur', handleEventHistoryBlur);
+}
+
+/**
+ * @params {Resource} resource
+ */
+function createResource(resource, template) {
+    let newResource = template.cloneNode(true);
+
+    newResource.querySelector(".name").textContent = resource.name;
+
+    let properties = newResource.querySelector(".properties");
+    for (let p in resource.properties) {
+        if (resource.properties[p] === undefined) {
+            continue;
+        }
+
+        let e = document.createElement("div");
+        e.textContent = resource.properties[p].name + ": " + resource.properties[p].value;
+        properties.appendChild(e);
+    }
+
+    return newResource;
+}
+
 /**
  * @param {Asset} asset
  */
 function createAsset(asset) {
-    let newAsset = assetTemplate.cloneNode(true);
-
-    newAsset.querySelector(".name").textContent = asset.name;
+    let newAsset = createResource(asset, assetTemplate);
 
     let upgrades = newAsset.querySelector(".upgrades");
     for (let i = 0; i < upgrades.children.length; i++) {
@@ -1022,18 +532,14 @@ function createAsset(asset) {
         }
     }
 
-    let properties = newAsset.querySelector(".properties");
-    for (let p in asset.properties) {
-        if (asset.properties[p] === undefined) {
-            continue;
-        }
-
-        let e = document.createElement("div");
-        e.textContent = asset.properties[p].name + ": " + asset.properties[p].value;
-        properties.appendChild(e);
-    }
-
     return newAsset;
+}
+
+/**
+ * @param {InventoryItem} item
+ */
+function createInventory(item) {
+    return createResource(item, inventoryTemplate);
 }
 
 function createProgressTrack(name, rank, roll) {
@@ -1128,9 +634,9 @@ function doRoll(statAdd, genericAdd, source) {
 function handleSubmitEvent() {
     let input = entryInput.value;
     let type = (modeSwitch.on) ? EventType.Meta : EventType.Fiction
-    addEvent(session.history.length, input, type);
+    let newEvent = addEvent(session.history.length, input, type);
 
-    let moment = createMoment(input, type);
+    let moment = createMoment(input, type, session.history.length);
     session.addMoment(moment);
 
     entryInput.value = null;
@@ -1165,7 +671,7 @@ function addEvent(index, input, type) {
     let newEvent = createEvent(input, type);
     newEvent.dataset.index = index;
     eventHistory.appendChild(newEvent);
-    newEvent.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+    newEvent.scrollIntoView(SCROLL_EFFECT);
 }
 
 function handleRerollEvent(eventElement) {
@@ -1204,7 +710,7 @@ function handleEditEvent(eventElement) {
     entryInput.value = moment.input;
     modeSwitch.on = (moment.type == EventType.Meta);
 
-    eventElement.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+    eventElement.scrollIntoView(SCROLL_EFFECT);
 }
 
 function handleCancelEditEvent() {
@@ -1231,7 +737,7 @@ function handleSaveEditEvent() {
     session.gotoMoment(edittingEvent.dataset.index - 1);
 
     let type = (modeSwitch.on) ? EventType.Meta : EventType.Fiction
-    let moment = createMoment(entryInput.value, type);
+    let moment = createMoment(entryInput.value, type, edittingEvent.dataset.index);
     session.updateMoment(edittingEvent.dataset.index, moment);
     session.gotoPresentMoment();
 
@@ -1404,12 +910,58 @@ function refresh() {
         let asset = createAsset(state);
         assetList.appendChild(asset);
     }
+
+    // inventory items
+    let itemList = inventoryCard.querySelector(".items");
+    while (itemList.children.length > 0) {
+        let last = itemList.children.length - 1;
+        itemList.children[last].remove();
+    }
+
+    for (let p in session.state.items) {
+        let state = session.state.items[p];
+        if (session.state.items[p] == undefined) {
+            continue;
+        }
+
+        if (itemList.children.length > 0) {
+            let divider = document.createElement("hr");
+            divider.classList.add("card-divider");
+            itemList.appendChild(divider);
+        }
+
+        let item = createInventory(state);
+        itemList.appendChild(item);
+    }
+
+    // bookmarks
+    refreshBookmarksList(bookmarksFilterIndex);
 }
 
-function createMoment(input, type) {
-    let moment = new Moment(input, type);
+function refreshBookmarksList(filterIdx = 0) {
+    // Clear existing list so we always get the freshest bookmarks from the session
+    bookmarksList.root_.innerHTML = '';
+    for (let [index, entryBookmarks] of Object.entries(session.bookmarks)) {
+        for(let bookmark of entryBookmarks) {
+            if (filterIdx !== 0 && !_.includes(BookmarkFilterTypeMapping[filterIdx], bookmark.type)) { continue; }
+            let newBookmark = bookmarkTemplate.cloneNode(true);
+            newBookmark.dataset.eventIndex = index; // Needed for the bookmarkList MDC component
+            newBookmark.querySelector('.content').textContent = bookmark.name;
 
+            let icon = newBookmark.querySelector('i');
+            icon.className = BookmarkTypeMapping[bookmark.type].iconClass;
+            icon.title = BookmarkTypeMapping[bookmark.type].title;
+
+            bookmarksList.root_.appendChild(newBookmark);
+        }
+    }
+}
+
+function createMoment(input, type, index) {
+    index = parseInt(index);
+    let moment = new Moment(input, type);
     let result = input.match(/\[(.*?)\]/g);
+    let action = undefined;
     if (result != null) {
         for (let i = 0; i < result.length; i++) {
             let args = result[i]
@@ -1422,13 +974,18 @@ function createMoment(input, type) {
             };
 
             if (args[0] == "bond") {
-                moment.addAction(addBond(args));
+                action = addBond(args);
+                moment.addAction(action);
             } else if (args[0] == "unbond") {
-                moment.addAction(removeBond(args));
+                action = removeBond(args);
+                moment.addAction(action);
             } else if (args[0] == "asset") {
                 moment.addAction(updateAsset(args));
+            } else if (args[0] == "item") {
+                moment.addAction(updateInventory(args));
             } else if (args[0] == "progress") {
-                moment.addAction(progress(args));
+                action = progress(args);
+                moment.addAction(action);
             } else if (args[0] == "rename") {
                 moment.addAction(renameCharacter(args));
             } else if (args[0] == "is") {
@@ -1439,10 +996,17 @@ function createMoment(input, type) {
                 moment.addAction(removeDebility(args));
                 moment.addAction(new StatAction("momentumMax", "+", 1));
                 moment.addAction(new StatAction("momentumReset", "+", 1));
+            } else if (args[0] == "bookmark") {
+                args[2] = type;
+                moment.addAction(addBookmark(args, index));
             } else if (STATS[args[0]] !== undefined) {
                 moment.addAction(changeStat(args));
             } else {
                 // invalid command
+            }
+
+            if (action !== undefined) {
+                moment.addAction(addBookmark(action.bookmarkArgs(), index));
             }
         }
     }
@@ -1475,7 +1039,46 @@ function updateAsset(args) {
     action.action = "update";
     action.propertyId = args[2].toLowerCase();
     action.propertyName = args[2];
-    
+
+    action.propertyModifier = "=";
+    let value = args[3];
+    if (isNaN(value)) {
+        action.propertyValue = value;
+    } else {
+        if (value[0] == "+" || value[0] == "-") {
+            action.propertyModifier = value[0];
+        }
+        action.propertyValue = Math.abs(value);
+    }
+
+    return action;
+}
+
+function updateInventory(args) {
+    if (args[1] == undefined) {
+        return;
+    }
+
+    let id = args[1].toLowerCase();
+    let action = new InventoryAction(id);
+    action.inventoryName = args[1];
+
+    if (args.length == 2) {
+        // no arguments, so just add inventory item
+        action.action = "add";
+        return action;
+    }
+
+    if (args.length == 3) {
+        // assume last argument is quantity
+        args[3] = args[2];
+        args[2] = 'Quantity';
+    }
+
+    action.action = (session.state.items[id]) ? "update" : "add";
+    action.propertyId = args[2].toLowerCase();
+    action.propertyName = args[2];
+
     action.propertyModifier = "=";
     let value = args[3];
     if (isNaN(value)) {    
@@ -1532,6 +1135,7 @@ function progress(args) {
     let id = args[1].toLowerCase();
     let option = (args[2] === undefined) ? undefined : args[2].toLowerCase();
     let progress = new ProgressAction(id);
+    progress.progressName = args[1];
 
     if (option === undefined) {
         // mark progress
@@ -1551,7 +1155,6 @@ function progress(args) {
         // start new progress
         progress.action = "add";
         progress.rank = option;
-        progress.progressName = args[1];
     }
 
     return progress;
@@ -1565,6 +1168,7 @@ function removeBond(args) {
     let id = args[1].toLowerCase();
     let bond = new BondAction(id);
     bond.action = "remove";
+    bond.bondName = args[1];
     return bond;
 }
 
@@ -1578,6 +1182,17 @@ function addBond(args) {
     bond.action = "add";
     bond.bondName = args[1];
     return bond;
+}
+
+function addBookmark(args, index) {
+    if (args[1] == undefined) {
+        return;
+    }
+    let bookmark = new BookmarkAction(index, args[0] === 'auto-bookmark');
+    bookmark.action = "add";
+    bookmark.bookmarkName = args[1];
+    bookmark.bookmarkType = (args[2] !== undefined) ? args[2] : "fiction";
+    return bookmark;
 }
 
 function changeStat(args) {
