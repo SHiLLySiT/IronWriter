@@ -18,7 +18,7 @@
     along with this program. If not, see https://github.com/SHiLLySiT/IronWriter/blob/master/LICENSE.txt.
 */
 
-const VERSION = "0.2.2";
+const VERSION = "0.3.0";
 const MAX_EXPERIENCE = 30;
 const MAX_PROGRESS = 10;
 
