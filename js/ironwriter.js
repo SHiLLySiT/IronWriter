@@ -58,12 +58,31 @@ const DEBILITIES = {
     tormented: 0,
 };
 
+const SCROLL_EFFECT = { behavior: "smooth", block: "center", inline: "nearest" };
+
 const EventType = {
     None: 'none',
     Fiction: 'fiction',
     Meta: 'meta',
     Roll: 'roll',
 }
+
+const BookmarkTypeMapping = {
+    'fiction': {iconClass: 'far fa-file-alt', title: "Fiction"},
+    'meta': {iconClass: 'fas fa-file-alt', title: "Meta"},
+    'bond': {iconClass: 'fas fa-link', title: "Bond"},
+    'unbond': {iconClass: 'fas fa-unlink', title: "Unbond"},
+    'progress_add': {iconClass: 'far fa-star', title: "Started Progress"},
+    'progress_progress': {iconClass: 'fas fa-star-half-alt', title: "Made Progress" },
+    'progress_complete': {iconClass: 'fas fa-star', title: "Completed Progress"},
+}
+
+const BookmarkFilterTypeMapping = {
+    /* "all" is implied */
+    1: ['bond', 'unbond'],
+    2: ['fiction', 'meta'],
+    3: ['progress_add', 'progress_progress', 'progress_complete']
+};
 
 let statElements = {};
 for (let p in STATS) {
@@ -85,6 +104,7 @@ let fictionEventTemplate = undefined;
 let metaEventTemplate = undefined;
 let entryInput = undefined;
 let eventHistory = undefined;
+let eventHistoryScrollObserver = undefined;
 let progressCard = undefined;
 let progressTrackTemplate = undefined;
 let bondCard = undefined;
@@ -96,6 +116,11 @@ let assetTemplate = undefined;
 let inventoryCard = undefined;
 let inventoryTemplate = undefined;
 let confirmDialog = undefined;
+let bookmarksDialog = undefined;
+let bookmarksFilter = undefined;
+let bookmarksFilterIndex = 0;
+let bookmarksList = undefined;
+let bookmarkTemplate = undefined;
 
 let bondProgressTrack = undefined;
 let edittingEvent = null;
@@ -105,6 +130,8 @@ let oldEditEventColor = {
 };
 let oldInput = "";
 let oldMode = false;
+
+let scrolledIndex = null;
 
 let session = new Session();
 
@@ -121,8 +148,8 @@ function handleInit() {
 
     let storyContainer = document.querySelector(".story-container");
 
-    let inputTab = new mdc.tabBar.MDCTabBar(document.querySelector(".mdc-tab-bar"));
-    inputTab.listen("MDCTabBar:activated", (event) => {
+    let entryTab = new mdc.tabBar.MDCTabBar(document.getElementById('entry-tabs'));
+    entryTab.listen("MDCTabBar:activated", (event) => {
         if (event.detail.index == 0) {
             storyContainer.style.display = "block";
             rollContainer.style.display = "none";
@@ -214,6 +241,7 @@ function handleInit() {
     initOracle();
     initAssets();
     initInventory();
+    initBookmarks();
 
     window.requestAnimationFrame(() => {
         let str = localStorage.getItem("session");
@@ -229,7 +257,7 @@ function handleInit() {
         let events = eventHistory.querySelectorAll("#event-history .event-base");
         if (events.length > 0) {
             let lastEvent = events[events.length - 1];
-            lastEvent.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+            lastEvent.scrollIntoView(SCROLL_EFFECT);
         }
     });    
 }
@@ -409,6 +437,60 @@ function initBonds() {
     bondTemplate.remove();
 }
 
+function initBookmarks() {
+    bookmarksDialog = document.getElementById("bookmarks-dialog").MDCDialog;
+    bookmarksFilter = document.getElementById("bookmarks-filter").MDCTabBar;
+    bookmarksList = document.getElementById("bookmarks-list").MDCList;
+    bookmarkTemplate = document.getElementById('bookmark-template');
+    bookmarkTemplate.remove();
+
+    eventHistoryScrollObserver = new IntersectionObserver(handleEventHistoryScroll, {root: eventHistory, threshold: 1.0});
+
+    bookmarksFilter.listen("MDCTabBar:activated", (event) => {
+        bookmarksFilterIndex = event.detail.index;
+        refreshBookmarksList(bookmarksFilterIndex);
+    });
+
+    bookmarksList.root_.addEventListener("MDCList:action", (event) => {
+        let eventIndex = bookmarksList.listElements[event.detail.index].dataset.eventIndex;
+        // While you can pass an object to the `close` call, the docs indicate it should be a string, so...
+        bookmarksDialog.close("bookmarkSelected:" + eventIndex);
+    });
+
+    document.getElementById("bookmarks").addEventListener("click", () => {
+        bookmarksDialog.open();
+    });
+
+    bookmarksDialog.listen("MDCDialog:closed", (event) => {
+        let [action, index] = event.detail.action.split(':');
+        if (index === undefined) { return; }
+        let item = eventHistory.querySelector('.mdc-card[data-index="' + index + '"]');
+        eventHistoryScrollObserver.observe(item);
+        scrolledIndex = index;
+        // Timeout needed for Chrome workaround since MDCDialog.close() will cancel all animation frames (and thus the
+        // smooth scroll) even at this late stage in its lifecycle.
+        setTimeout( (el) => { el.scrollIntoView(SCROLL_EFFECT) }, 0, item);
+    });
+}
+
+
+function handleEventHistoryScroll(event) {
+    if (scrolledIndex === null || event[0].isIntersecting === false ) { return; }
+
+    let eventElement = event[0].target;
+    eventElement.classList.add('bookmark-selected');
+    eventElement.focus();
+    eventElement.addEventListener('blur', handleEventHistoryBlur);
+    eventHistoryScrollObserver.unobserve(eventElement);
+    scrolledIndex = null;
+}
+
+function handleEventHistoryBlur(event) {
+    let el = event.target;
+    el.classList.remove('bookmark-selected');
+    el.removeEventListener('blur', handleEventHistoryBlur);
+}
+
 /**
  * @params {Resource} resource
  */
@@ -552,9 +634,9 @@ function doRoll(statAdd, genericAdd, source) {
 function handleSubmitEvent() {
     let input = entryInput.value;
     let type = (modeSwitch.on) ? EventType.Meta : EventType.Fiction
-    addEvent(session.history.length, input, type);
+    let newEvent = addEvent(session.history.length, input, type);
 
-    let moment = createMoment(input, type);
+    let moment = createMoment(input, type, session.history.length);
     session.addMoment(moment);
 
     entryInput.value = null;
@@ -589,7 +671,7 @@ function addEvent(index, input, type) {
     let newEvent = createEvent(input, type);
     newEvent.dataset.index = index;
     eventHistory.appendChild(newEvent);
-    newEvent.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+    newEvent.scrollIntoView(SCROLL_EFFECT);
 }
 
 function handleRerollEvent(eventElement) {
@@ -628,7 +710,7 @@ function handleEditEvent(eventElement) {
     entryInput.value = moment.input;
     modeSwitch.on = (moment.type == EventType.Meta);
 
-    eventElement.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+    eventElement.scrollIntoView(SCROLL_EFFECT);
 }
 
 function handleCancelEditEvent() {
@@ -655,7 +737,7 @@ function handleSaveEditEvent() {
     session.gotoMoment(edittingEvent.dataset.index - 1);
 
     let type = (modeSwitch.on) ? EventType.Meta : EventType.Fiction
-    let moment = createMoment(entryInput.value, type);
+    let moment = createMoment(entryInput.value, type, edittingEvent.dataset.index);
     session.updateMoment(edittingEvent.dataset.index, moment);
     session.gotoPresentMoment();
 
@@ -835,6 +917,7 @@ function refresh() {
         let last = itemList.children.length - 1;
         itemList.children[last].remove();
     }
+
     for (let p in session.state.items) {
         let state = session.state.items[p];
         if (session.state.items[p] == undefined) {
@@ -850,12 +933,35 @@ function refresh() {
         let item = createInventory(state);
         itemList.appendChild(item);
     }
+
+    // bookmarks
+    refreshBookmarksList(bookmarksFilterIndex);
 }
 
-function createMoment(input, type) {
-    let moment = new Moment(input, type);
+function refreshBookmarksList(filterIdx = 0) {
+    // Clear existing list so we always get the freshest bookmarks from the session
+    bookmarksList.root_.innerHTML = '';
+    for (let [index, entryBookmarks] of Object.entries(session.bookmarks)) {
+        for(let bookmark of entryBookmarks) {
+            if (filterIdx !== 0 && !_.includes(BookmarkFilterTypeMapping[filterIdx], bookmark.type)) { continue; }
+            let newBookmark = bookmarkTemplate.cloneNode(true);
+            newBookmark.dataset.eventIndex = index; // Needed for the bookmarkList MDC component
+            newBookmark.querySelector('.content').textContent = bookmark.name;
 
+            let icon = newBookmark.querySelector('i');
+            icon.className = BookmarkTypeMapping[bookmark.type].iconClass;
+            icon.title = BookmarkTypeMapping[bookmark.type].title;
+
+            bookmarksList.root_.appendChild(newBookmark);
+        }
+    }
+}
+
+function createMoment(input, type, index) {
+    index = parseInt(index);
+    let moment = new Moment(input, type);
     let result = input.match(/\[(.*?)\]/g);
+    let action = undefined;
     if (result != null) {
         for (let i = 0; i < result.length; i++) {
             let args = result[i]
@@ -868,15 +974,18 @@ function createMoment(input, type) {
             };
 
             if (args[0] == "bond") {
-                moment.addAction(addBond(args));
+                action = addBond(args);
+                moment.addAction(action);
             } else if (args[0] == "unbond") {
-                moment.addAction(removeBond(args));
+                action = removeBond(args);
+                moment.addAction(action);
             } else if (args[0] == "asset") {
                 moment.addAction(updateAsset(args));
             } else if (args[0] == "item") {
                 moment.addAction(updateInventory(args));
             } else if (args[0] == "progress") {
-                moment.addAction(progress(args));
+                action = progress(args);
+                moment.addAction(action);
             } else if (args[0] == "rename") {
                 moment.addAction(renameCharacter(args));
             } else if (args[0] == "is") {
@@ -887,10 +996,17 @@ function createMoment(input, type) {
                 moment.addAction(removeDebility(args));
                 moment.addAction(new StatAction("momentumMax", "+", 1));
                 moment.addAction(new StatAction("momentumReset", "+", 1));
+            } else if (args[0] == "bookmark") {
+                args[2] = type;
+                moment.addAction(addBookmark(args, index));
             } else if (STATS[args[0]] !== undefined) {
                 moment.addAction(changeStat(args));
             } else {
                 // invalid command
+            }
+
+            if (action !== undefined) {
+                moment.addAction(addBookmark(action.bookmarkArgs(), index));
             }
         }
     }
@@ -1019,6 +1135,7 @@ function progress(args) {
     let id = args[1].toLowerCase();
     let option = (args[2] === undefined) ? undefined : args[2].toLowerCase();
     let progress = new ProgressAction(id);
+    progress.progressName = args[1];
 
     if (option === undefined) {
         // mark progress
@@ -1038,7 +1155,6 @@ function progress(args) {
         // start new progress
         progress.action = "add";
         progress.rank = option;
-        progress.progressName = args[1];
     }
 
     return progress;
@@ -1052,6 +1168,7 @@ function removeBond(args) {
     let id = args[1].toLowerCase();
     let bond = new BondAction(id);
     bond.action = "remove";
+    bond.bondName = args[1];
     return bond;
 }
 
@@ -1065,6 +1182,17 @@ function addBond(args) {
     bond.action = "add";
     bond.bondName = args[1];
     return bond;
+}
+
+function addBookmark(args, index) {
+    if (args[1] == undefined) {
+        return;
+    }
+    let bookmark = new BookmarkAction(index, args[0] === 'auto-bookmark');
+    bookmark.action = "add";
+    bookmark.bookmarkName = args[1];
+    bookmark.bookmarkType = (args[2] !== undefined) ? args[2] : "fiction";
+    return bookmark;
 }
 
 function changeStat(args) {

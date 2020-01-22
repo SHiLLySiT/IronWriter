@@ -26,6 +26,10 @@ class Session {
          */
         this.history = [];
         this.momentIndex = -1;
+        /**
+         * @type {string, Bookmark[]}
+         */
+        this.bookmarks = {};
     }
 
     /**
@@ -49,6 +53,7 @@ class Session {
      */
     removeMoment(index) {
         this.history.splice(index, 1);
+        this.removeBookmark(index);
     }
 
     /**
@@ -70,6 +75,18 @@ class Session {
 
     gotoPresentMoment() {
         this.gotoMoment(this.history.length - 1);
+    }
+
+    /**
+     * @param {number} index
+     */
+    removeBookmark(index) {
+        for(let i = index, j = this.history.length; i < j; i++) {
+            for(let a of this.history[i].actions) {
+                if (a.type !== "BookmarkAction") { continue; }
+                a.eventIndex--;
+            }
+        }
     }
 }
 
@@ -145,20 +162,11 @@ class Asset extends Resource {
     }
 }
 
-class Bond {
-    /**
-     * @param {string} name
-     */
-    constructor(name) {
-        this.name = name;
-    }
-}
-
 class InventoryItem extends Resource {
     /**
      * @param {string} name
      */
-    constructor(name, quantity = 1) {
+    constructor(name, quantity) {
         super(name);
 
         let quantityProp = new ResourceProperty();
@@ -170,6 +178,26 @@ class InventoryItem extends Resource {
         this.properties = {
             "quantity": quantityProp
         };
+    }
+}
+
+class Bond {
+    /**
+     * @param {string} name
+     */
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+class Bookmark {
+    /**
+     * @param {string} name
+     * @param {string} type
+     */
+    constructor(name, type) {
+        this.name = name;
+        this.type = type;
     }
 }
 
@@ -249,6 +277,16 @@ class Action {
      * @param {Moment} moment
      */
     unapplyAction(gameState, moment) {
+    }
+
+    bookmarkArgs() {
+        return ["auto-bookmark", this.bookmarkName(), this.bookmarkType()];
+    }
+
+    bookmarkName() {
+    }
+
+    bookmarkType() {
     }
 }
 
@@ -553,6 +591,19 @@ class ProgressAction extends Action {
             }
         }
     }
+
+    bookmarkName() {
+       switch(this.action) {
+            case "add": return "Started: " + this.progressName;
+            case "tick": // use fallthrough so tick & progress do the same thing
+            case "progress": return "Progressed: " + this.progressName;
+            case "complete": return "Completed: " + this.progressName;
+        }
+    }
+
+    bookmarkType() {
+        return "progress_" + this.action;
+    }
 }
 
 class BondAction extends Action {
@@ -601,6 +652,54 @@ class BondAction extends Action {
                 gameState.stats.bonds++;
             }
         }
+    }
+
+    bookmarkName() {
+        switch(this.action) {
+            case "add": return "Bond: " + this.bondName;
+            case "remove": return "Unbond: " + this.bondName;
+        }
+    }
+
+    bookmarkType() {
+        switch(this.action) {
+            case "add": return "bond";
+            case "remove": return "unbond";
+        }
+    }
+}
+
+class BookmarkAction extends Action {
+     /**
+     * @param {number} index
+     * @params {boolean} isAutomatic
+     */
+    constructor(index, isAutomatic = false) {
+        super();
+        this.type = "BookmarkAction";
+        this.eventIndex = index;
+        this.isAutomatic = isAutomatic;
+        this.action = "";
+        this.bookmarkName = "";
+        this.bookmarkType = "fiction";
+    }
+
+    applyAction(gameState, moment) {
+        // Bookmarks do not change state
+        let b = new Bookmark(this.bookmarkName, this.bookmarkType);
+        if(session.bookmarks[this.eventIndex] == undefined) {
+            session.bookmarks[this.eventIndex] = [b];
+        } else {
+            session.bookmarks[this.eventIndex].push(b);
+        }
+    }
+
+    /**
+     * @param {GameState} gameState
+     * @param {Moment} moment
+     */
+    unapplyAction(gameState, moment) {
+        delete session.bookmarks[this.eventIndex];
     }
 }
 
@@ -723,4 +822,5 @@ const ACTION_TYPES = {
     "RollAction": RollAction,
     "AssetAction": AssetAction,
     "InventoryAction": InventoryAction,
+    "BookmarkAction": BookmarkAction,
 }
