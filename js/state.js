@@ -166,7 +166,7 @@ class InventoryItem extends Resource {
     /**
      * @param {string} name
      */
-    constructor(name, quantity) {
+    constructor(name, quantity = 1) {
         super(name);
 
         let quantityProp = new ResourceProperty();
