@@ -69,7 +69,7 @@ There are two types of events - "fiction" and "meta". Functionally there is noth
 
 ![alt text](/docs/images/mode-toggle.gif)
 
-IronWriter uses special markup (referred to as "tags") to automatically update the character sheet. These tags should always be wrapped in square brackets `[]` but this documentation will leave them out for brevity. 
+IronWriter uses special markup (referred to as "tags") to automatically update the character sheet. These tags are case-insensitive (`removeAsset` is the same as `removeasset`) and should always be wrapped in square brackets `[]`. This documentation will use capitalization for clarity and leave out the brackets for brevity.
 
 ![alt text](/docs/images/markup.gif)
 
@@ -213,6 +213,9 @@ asset <name> <perk>
 ```
 asset <name> <property> {modifier}<value>
 ```
+```
+removeAsset <name>
+```
 
 ### Parameters
 * `<name>` The name of the asset.
@@ -231,6 +234,7 @@ asset <name> <property> {modifier}<value>
 * `asset Hawk Health +10` Adds "10" to the "Health" property for the asset called "Hawk".
 * `asset Hawk Health -5` Subtracts "5" from the "Health" property for the asset called "Hawk".
 * `asset Wright Specialty Herbalism` Sets the "Specialty" property to "Herbalism" for the asset called "Wright".
+* `removeAsset Wright` Removes the "Wright" asset.
 
 ## Managing Inventory
 Adds and updates your character's inventory.
@@ -239,6 +243,9 @@ item <name> <quantity>
 ```
 ```
 item <name> <property> {modifier}<value>
+```
+```
+removeItem <name>
 ```
 
 ### Parameters
@@ -259,10 +266,11 @@ item <name> <property> {modifier}<value>
 ### Examples
 * `item Dagger` Adds an item called "Dagger" with the default "Quantity" property set at "1".
 * `item Arrows 5` Adds an item called "Arrows" with the "Quantity" property set at "5".
-* `item Dagger Condition 3` Sets the "Sharpness" property to "3" for the item called "Dagger".
+* `item Dagger Condition 3` Sets the "Condition" property to "3" for the item called "Dagger".
 * `item Dagger Condition +2` Adds "2" to the "Condition" property for the item called "Dagger".
 * `item Dagger Condition -5` Subtracts "5" from the "Condition" property for the item called "Dagger".
 * `item Waterskin Level Full` Sets the "Level" property to "Full" for the item called "Waterskin".
+* `removeItem Waterskin` Removes "Waterskin" from the inventory.
 
 ## Bookmarking Events
 Adds a Bookmark to the bookmark list.

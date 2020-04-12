@@ -973,6 +973,9 @@ function createMoment(input, type, index) {
                 args[j] = args[j].replace(/^"(.+(?="$))"$/, '$1');
             };
 
+            // Ignore case for tags
+            args[0] = args[0].toLowerCase();
+
             if (args[0] == "bond") {
                 action = addBond(args);
                 moment.addAction(action);
@@ -981,8 +984,12 @@ function createMoment(input, type, index) {
                 moment.addAction(action);
             } else if (args[0] == "asset") {
                 moment.addAction(updateAsset(args));
+            } else if (args[0] == "removeasset") {
+                moment.addAction(removeAsset(args));
             } else if (args[0] == "item") {
                 moment.addAction(updateInventory(args));
+            } else if (args[0] == "removeitem") {
+                moment.addAction(removeInventory(args));
             } else if (args[0] == "progress") {
                 action = progress(args);
                 moment.addAction(action);
@@ -1054,6 +1061,19 @@ function updateAsset(args) {
     return action;
 }
 
+function removeAsset(args) {
+     if (args[1] == undefined) {
+        return;
+    }
+
+    let id = args[1].toLowerCase();
+    let action = new AssetAction(id);
+    action.action = "remove";
+    action.assetName = args[1];
+    return action;
+
+}
+
 function updateInventory(args) {
     if (args[1] == undefined) {
         return;
@@ -1091,6 +1111,19 @@ function updateInventory(args) {
     }
 
     return action;
+}
+
+function removeInventory(args) {
+     if (args[1] == undefined) {
+        return;
+    }
+
+    let id = args[1].toLowerCase();
+    let action = new InventoryAction(id);
+    action.action = "remove";
+    action.inventoryName = args[1];
+    return action;
+
 }
 
 function renameCharacter(args) {
