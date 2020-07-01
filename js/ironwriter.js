@@ -187,12 +187,12 @@ function handleInit() {
 
     document.getElementById("import").addEventListener("click", () => {
         let handler = (action) => { 
-            confirmDialog.root_.removeEventListener("MDCDialog:closed", handler);
+            confirmDialog.root.removeEventListener("MDCDialog:closed", handler);
             if (action.detail.action == "accept") {
                 importSession();
             }
         };
-        confirmDialog.root_.addEventListener("MDCDialog:closed", handler);
+        confirmDialog.root.addEventListener("MDCDialog:closed", handler);
         confirmDialog.content_.textContent = "Are you sure you want to import a session? Your current session will be lost.";
         confirmDialog.open();
     });
@@ -203,12 +203,12 @@ function handleInit() {
 
     document.getElementById("new").addEventListener("click", () => {
         let handler = (action) => { 
-            confirmDialog.root_.removeEventListener("MDCDialog:closed", handler);
+            confirmDialog.root.removeEventListener("MDCDialog:closed", handler);
             if (action.detail.action == "accept") {
                 newSession();
             }
         };
-        confirmDialog.root_.addEventListener("MDCDialog:closed", handler);
+        confirmDialog.root.addEventListener("MDCDialog:closed", handler);
         confirmDialog.content_.textContent = "Are you sure you want to start a new session? Your current session will be deleted.";
         confirmDialog.open();
     });
@@ -451,7 +451,7 @@ function initBookmarks() {
         refreshBookmarksList(bookmarksFilterIndex);
     });
 
-    bookmarksList.root_.addEventListener("MDCList:action", (event) => {
+    bookmarksList.root.addEventListener("MDCList:action", (event) => {
         let eventIndex = bookmarksList.listElements[event.detail.index].dataset.eventIndex;
         // While you can pass an object to the `close` call, the docs indicate it should be a string, so...
         bookmarksDialog.close("bookmarkSelected:" + eventIndex);
@@ -756,7 +756,7 @@ function handleSaveEditEvent() {
 
 function handleDeleteEvent(eventElement) {
     let handler = (action) => { 
-        confirmDialog.root_.removeEventListener("MDCDialog:closed", handler);
+        confirmDialog.root.removeEventListener("MDCDialog:closed", handler);
         if (action.detail.action != "accept") {
             return;
         }
@@ -778,7 +778,7 @@ function handleDeleteEvent(eventElement) {
         saveSession();
         refresh();
     };
-    confirmDialog.root_.addEventListener("MDCDialog:closed", handler);
+    confirmDialog.root.addEventListener("MDCDialog:closed", handler);
     confirmDialog.content_.textContent = "Are you sure you want to delete this event?";
     confirmDialog.open();
 }
@@ -940,7 +940,7 @@ function refresh() {
 
 function refreshBookmarksList(filterIdx = 0) {
     // Clear existing list so we always get the freshest bookmarks from the session
-    bookmarksList.root_.innerHTML = '';
+    bookmarksList.root.innerHTML = '';
     for (let [index, entryBookmarks] of Object.entries(session.bookmarks)) {
         for(let bookmark of entryBookmarks) {
             if (filterIdx !== 0 && !_.includes(BookmarkFilterTypeMapping[filterIdx], bookmark.type)) { continue; }
@@ -952,7 +952,7 @@ function refreshBookmarksList(filterIdx = 0) {
             icon.className = BookmarkTypeMapping[bookmark.type].iconClass;
             icon.title = BookmarkTypeMapping[bookmark.type].title;
 
-            bookmarksList.root_.appendChild(newBookmark);
+            bookmarksList.root.appendChild(newBookmark);
         }
     }
 }
