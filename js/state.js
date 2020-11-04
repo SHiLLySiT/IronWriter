@@ -767,7 +767,7 @@ class RollAction extends Action {
 
         let result = "> Weak Hit";
         let totalAction = actionValue + statAddValue + this.genericAdd;
-        if (totalAction < this.challenge[0] && totalAction < this.challenge[1]) {
+        if (totalAction <= this.challenge[0] && totalAction <= this.challenge[1]) {
             result = "> Miss"
         } else if (totalAction > this.challenge[0] && totalAction > this.challenge[1]) {
             result = "> Strong Hit"
