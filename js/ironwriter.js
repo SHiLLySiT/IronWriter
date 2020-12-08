@@ -74,6 +74,7 @@ const BookmarkTypeMapping = {
     'unbond': {iconClass: 'fas fa-unlink', title: "Unbond"},
     'progress_add': {iconClass: 'far fa-star', title: "Started Progress"},
     'progress_progress': {iconClass: 'fas fa-star-half-alt', title: "Made Progress" },
+    'progress_tick': {iconClass: 'fas fa-star-half-alt', title: "Made Progress" },
     'progress_complete': {iconClass: 'fas fa-star', title: "Completed Progress"},
 }
 
