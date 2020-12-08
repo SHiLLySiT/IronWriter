@@ -140,6 +140,14 @@ window.addEventListener("load", handleInit);
 function handleInit() {
     window.mdc.autoInit();
 
+    // not sure why, but the material component library isn't automatically handling setting the label to the select item...
+    let allDropdowns = document.querySelectorAll(".mdc-select");
+    for (let i = 0; i < allDropdowns.length; i++) {
+        allDropdowns[i].addEventListener("MDCSelect:change", (event) => {
+            allDropdowns[i].MDCSelect.selectedText.innerHTML = allDropdowns[i].MDCSelect.menu.items[event.detail.index].innerHTML;
+        });
+    }
+
     let rollContainer = document.querySelector(".roll-container");
     rollContainer.style.display = "none";
 
