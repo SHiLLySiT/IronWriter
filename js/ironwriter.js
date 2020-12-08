@@ -18,7 +18,7 @@
     along with this program. If not, see https://github.com/SHiLLySiT/IronWriter/blob/master/LICENSE.txt.
 */
 
-const VERSION = "0.3.1";
+const VERSION = "0.3.2";
 const MAX_EXPERIENCE = 30;
 const MAX_PROGRESS = 10;
 
@@ -74,6 +74,7 @@ const BookmarkTypeMapping = {
     'unbond': {iconClass: 'fas fa-unlink', title: "Unbond"},
     'progress_add': {iconClass: 'far fa-star', title: "Started Progress"},
     'progress_progress': {iconClass: 'fas fa-star-half-alt', title: "Made Progress" },
+    'progress_tick': {iconClass: 'fas fa-star-half-alt', title: "Made Progress" },
     'progress_complete': {iconClass: 'fas fa-star', title: "Completed Progress"},
 }
 
@@ -139,6 +140,14 @@ window.addEventListener("load", handleInit);
 
 function handleInit() {
     window.mdc.autoInit();
+
+    // not sure why, but the material component library isn't automatically handling setting the label to the select item...
+    let allDropdowns = document.querySelectorAll(".mdc-select");
+    for (let i = 0; i < allDropdowns.length; i++) {
+        allDropdowns[i].addEventListener("MDCSelect:change", (event) => {
+            allDropdowns[i].MDCSelect.selectedText.innerHTML = allDropdowns[i].MDCSelect.menu.items[event.detail.index].innerHTML;
+        });
+    }
 
     let rollContainer = document.querySelector(".roll-container");
     rollContainer.style.display = "none";
