@@ -282,7 +282,6 @@ function newSession() {
     initialMoment.addAction(new StatAction("health", "=", 5));
     initialMoment.addAction(new StatAction("supply", "=", 5));
     initialMoment.addAction(new StatAction("spirit", "=", 5));
-    initialMoment.addAction(new StatAction("spirit", "=", 5));
     session.addMoment(initialMoment);
 
     saveSession();
@@ -984,6 +983,11 @@ function createMoment(input, type, index) {
 
             // Ignore case for tags
             args[0] = args[0].toLowerCase();
+
+            // special case for "experienceSpent"
+            if (args[0] == "experiencespent") {
+                args[0] = "experienceSpent";
+            }
 
             if (args[0] == "bond") {
                 action = addBond(args);
