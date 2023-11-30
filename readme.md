@@ -1,7 +1,7 @@
 # Overview
 IronWriter is an open-source writing tool for solo playthroughs of the free tabletop RPG [Ironsworn](https://www.ironswornrpg.com/). Focus on writing your story and let IronWriter automatically manage your character sheet.
 
-__IMPORTANT NOTE__: IronWriter is currently in active development and should be considered unstable until the v1.0 milestone is reached, so please export and backup any data important to you. Backward compatibility is not guaranteed. 
+⚠ __IMPORTANT NOTE__: IronWriter is on an indefinte development hiatus. It also has not yet reached v1.0 and should be considered unstable, so please export and backup any data important to you. Backward compatibility is not guaranteed. 
 
 ## Current Features
 * Use simple markup embedded in your story to automatically update your character sheet
@@ -215,6 +215,12 @@ asset <name> <property> {modifier}<value>
 ```
 ```
 removeAsset <name>
+```
+
+You must add an asset before adding perks or properties, e.g.
+```
+[asset Ritualist] // add asset first
+[asset Ritualist 1] // add first perk point
 ```
 
 ### Parameters
